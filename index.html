@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מקרר היין שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --wd:#0d0a0e;--ws:#1a1118;--wc:#241a22;--wb:#3d2d3a;
+  --wg:#c9a96e;--wgd:#8a6e44;--wr:#8b1a2a;--wrl:#c9324a;
+  --ww:#c9a12a;--wp:#c9547a;--wt:#f0e8d8;--wm:#8a7a88;--wa:#6b2d5e;
+}
+html,body{height:100%;background:var(--wd);color:var(--wt);font-family:'Heebo',sans-serif;direction:rtl}
+body{min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* CONNECT SCREEN */
+#connect-screen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2d0d20 0%,var(--wd) 70%);padding:1rem}
+.connect-box{background:var(--wc);border:1px solid var(--wb);border-radius:20px;padding:2rem;max-width:460px;width:100%}
+.connect-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--wg);text-align:center;margin-bottom:.3rem}
+.connect-sub{color:var(--wm);font-size:.85rem;text-align:center;margin-bottom:1.5rem;line-height:1.5}
+.step-label{display:flex;align-items:center;gap:.5rem;color:var(--wg);font-size:.8rem;font-weight:600;margin-bottom:.4rem;margin-top:1rem}
+.step-num{width:20px;height:20px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0}
+.clbl{display:block;color:var(--wm);font-size:.78rem;margin-bottom:.35rem;font-weight:500;margin-top:.8rem}
+.cinp{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.65rem .9rem;border-radius:9px;font-size:.88rem;font-family:'Heebo',sans-serif;margin-bottom:.6rem;transition:border-color .2s;direction:ltr;text-align:left}
+.cinp:focus{outline:none;border-color:var(--wg)}
+.connect-hint{background:rgba(201,169,110,.07);border:1px solid rgba(201,169,110,.2);border-radius:8px;padding:.7rem .9rem;font-size:.78rem;color:var(--wm);line-height:1.5;margin-bottom:1rem}
+.connect-hint b{color:var(--wg)}
+
+/* SETUP SCREEN */
+#setup-screen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2d0d20 0%,var(--wd) 70%);padding:1rem}
+.setup-box{background:var(--wc);border:1px solid var(--wb);border-radius:20px;padding:2.5rem;max-width:420px;width:100%;text-align:center}
+.slbl{display:block;text-align:right;color:var(--wm);font-size:.8rem;margin-bottom:.4rem;font-weight:500}
+.sinp{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.75rem 1rem;border-radius:10px;font-size:1.1rem;font-family:'Heebo',sans-serif;margin-bottom:1.2rem;text-align:center;transition:border-color .2s}
+.sinp:focus{outline:none;border-color:var(--wg)}
+.pbtn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;background:var(--ws);border:1.5px dashed var(--wb);color:var(--wm);padding:.75rem 1rem;border-radius:10px;font-size:.9rem;font-family:'Heebo',sans-serif;cursor:pointer;margin-bottom:.8rem;transition:all .2s}
+.pbtn:hover{border-color:var(--wgd);color:var(--wg)}
+.ppwrap{margin-bottom:1.2rem;position:relative;display:none}
+.ppimg{width:100%;height:130px;object-fit:cover;border-radius:10px}
+.pchbtn{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.6);border:1px solid var(--wb);color:var(--wt);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:'Heebo',sans-serif}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--wa),var(--wr));color:var(--wt);border:none;padding:.9rem;border-radius:12px;font-size:1rem;font-family:'Heebo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn-primary:hover{opacity:.9}.btn-primary:active{transform:scale(.98)}
+
+/* LOADING */
+.loading-screen{position:fixed;inset:0;background:var(--wd);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:1rem}
+.loading-screen.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid var(--wb);border-top-color:var(--wg);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--wm);font-size:.9rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--wc);border:1px solid var(--wb);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:var(--wt);z-index:999;transition:transform .3s;white-space:nowrap;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{border-color:var(--wrl);color:#f4a0ad}
+
+/* MAIN */
+.app-header{background:var(--ws);border-bottom:1px solid var(--wb);padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.app-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--wg)}
+.header-actions{display:flex;gap:.6rem}
+.icon-btn{background:none;border:1px solid var(--wb);color:var(--wm);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.icon-btn:hover{border-color:var(--wg);color:var(--wg)}
+.fridge-banner{position:relative;overflow:hidden;max-height:120px;display:none}
+.fridge-banner img{width:100%;height:120px;object-fit:cover;display:block}
+.fridge-banner-ov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(13,10,14,.8));display:flex;align-items:flex-end;padding:.5rem .8rem}
+.fbchbtn{background:rgba(0,0,0,.55);border:1px solid var(--wb);color:var(--wt);font-size:.72rem;padding:.25rem .6rem;border-radius:6px;cursor:pointer;font-family:'Heebo',sans-serif}
+.stats-bar{background:var(--wc);border-bottom:1px solid var(--wb);padding:.7rem 1.2rem;display:flex;gap:1.5rem;font-size:.85rem;overflow-x:auto}
+.stat-item{display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.sdot{width:10px;height:10px;border-radius:50%}
+.sdot.red{background:var(--wrl)}.sdot.white{background:var(--ww)}.sdot.rose{background:var(--wp)}.sdot.empty{background:var(--wb)}
+.scnt{font-weight:600;color:var(--wt)}.slb{color:var(--wm)}
+.fridge-section{padding:1.2rem;flex:1}
+.fridge-title{font-size:.75rem;color:var(--wm);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.8rem;font-weight:500}
+.col-labels{display:flex;gap:6px;padding-right:28px;margin-bottom:3px}
+.col-label{flex:1;text-align:center;font-size:.65rem;color:var(--wm);font-weight:500}
+.fridge-grid{display:flex;flex-direction:column;gap:6px}
+.fridge-row{display:flex;gap:6px;align-items:center}
+.row-label{color:var(--wm);font-size:.75rem;min-width:22px;text-align:center;font-weight:500}
+.slot{flex:1;min-width:60px;min-height:62px;border-radius:8px;border:1px solid var(--wb);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .18s;position:relative;overflow:hidden;background:var(--wc)}
+.slot:hover{transform:scale(1.04);z-index:2;border-color:var(--wgd)}
+.slot.empty .plus-icon{color:var(--wb);font-size:1.4rem;transition:color .18s}
+.slot.empty:hover .plus-icon{color:var(--wg)}
+.slot.red{background:linear-gradient(160deg,#4a0d1a,#2d0810);border-color:#6b1a28}
+.slot.white{background:linear-gradient(160deg,#3d2e05,#251d03);border-color:#6b5210}
+.slot.rose{background:linear-gradient(160deg,#4a1030,#2d081c);border-color:#6b1a44}
+.slot-wname{font-size:.62rem;color:rgba(240,232,216,.85);text-align:center;padding:0 4px;line-height:1.2;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-weight:500}
+.slot-yr{font-size:.58rem;color:rgba(201,169,110,.8);margin-top:2px}
+.slot-num{font-size:.55rem;color:rgba(138,122,136,.6);margin-top:2px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--ws);border-radius:20px 20px 0 0;border:1px solid var(--wb);border-bottom:none;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem 1.5rem 2rem;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:40px;height:4px;background:var(--wb);border-radius:2px;margin:0 auto 1.2rem}
+.mtitle{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--wg);margin-bottom:1.2rem}
+.flbl{display:block;color:var(--wm);font-size:.78rem;margin-bottom:.35rem;font-weight:500}
+.finp{width:100%;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.65rem .9rem;border-radius:9px;font-size:.95rem;font-family:'Heebo',sans-serif;margin-bottom:1rem;transition:border-color .2s}
+.finp:focus{outline:none;border-color:var(--wg)}
+.finp option{background:var(--wc)}
+textarea.finp{resize:vertical;min-height:70px}
+.type-radios{display:flex;gap:.6rem;margin-bottom:1rem}
+.type-radio{flex:1;text-align:center}
+.type-radio input{display:none}
+.type-radio label{display:block;padding:.5rem .3rem;border:1px solid var(--wb);border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .18s;color:var(--wm)}
+.type-radio input:checked+label{border-color:var(--wg);color:var(--wg);background:rgba(201,169,110,.08)}
+.rating-row{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
+.stars-row{display:flex;gap:.3rem;font-size:1.4rem;cursor:pointer}
+.star{color:var(--wb);transition:color .1s;user-select:none}
+.star.active{color:var(--wg)}
+.vivino-wrap{display:flex;align-items:center;gap:.5rem}
+.vinp{width:75px;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.4rem .6rem;border-radius:8px;font-size:.95rem;font-family:'Heebo',sans-serif;text-align:center}
+.vinp:focus{outline:none;border-color:var(--wg)}
+.modal-btn-row{display:flex;gap:.8rem;margin-top:.5rem}
+.btn-save{flex:2;background:linear-gradient(135deg,var(--wa),var(--wr));color:var(--wt);border:none;padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-save:hover{opacity:.88}
+.btn-cancel{flex:1;background:none;border:1px solid var(--wb);color:var(--wm);padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
+.btn-cancel:hover{border-color:var(--wm);color:var(--wt)}
+
+/* DETAIL */
+.dtbadge{display:inline-block;padding:.25rem .8rem;border-radius:20px;font-size:.8rem;margin-bottom:.8rem;font-weight:500}
+.dtbadge.red{background:rgba(139,26,42,.35);color:#f4a0ad;border:1px solid rgba(139,26,42,.5)}
+.dtbadge.white{background:rgba(201,161,42,.25);color:#e8d080;border:1px solid rgba(201,161,42,.4)}
+.dtbadge.rose{background:rgba(201,84,122,.25);color:#f4a0bc;border:1px solid rgba(201,84,122,.4)}
+.dtwname{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--wt);margin-bottom:.2rem}
+.dtvint{color:var(--wg);font-size:1rem;margin-bottom:1rem}
+.dtmeta{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem}
+.dtmi{background:var(--wc);border-radius:8px;padding:.6rem .8rem}
+.dtml{font-size:.7rem;color:var(--wm);margin-bottom:.1rem}
+.dtmv{font-size:.9rem;color:var(--wt);font-weight:500}
+.dtnotes{background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem;font-size:.9rem;color:var(--wm);line-height:1.6;white-space:pre-wrap}
+.btn-remove{flex:1;background:rgba(139,26,42,.25);border:1px solid rgba(139,26,42,.5);color:#f4a0ad;padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
+.btn-remove:hover{background:rgba(139,26,42,.45)}
+.btn-edit{flex:1;background:rgba(201,169,110,.12);border:1px solid var(--wgd);color:var(--wg);padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
+.btn-edit:hover{background:rgba(201,169,110,.2)}
+
+/* SEARCH */
+.search-panel{background:var(--wc);border-bottom:1px solid var(--wb);padding:.8rem 1.2rem;display:none}
+.search-panel.open{display:block}
+.sfield{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.6rem .9rem;border-radius:9px;font-size:.9rem;font-family:'Heebo',sans-serif;margin-bottom:.6rem}
+.sfield:focus{outline:none;border-color:var(--wg)}
+.filter-chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{padding:.3rem .7rem;border:1px solid var(--wb);border-radius:20px;font-size:.78rem;cursor:pointer;color:var(--wm);transition:all .18s}
+.chip.active{border-color:var(--wg);color:var(--wg);background:rgba(201,169,110,.08)}
+
+/* SIDE PANELS */
+.side-panel{position:fixed;inset:0;z-index:300;display:none}
+.side-panel.open{display:flex}
+.side-ov{flex:1;background:rgba(0,0,0,.6)}
+.side-content{width:min(360px,95vw);background:var(--ws);border-right:1px solid var(--wb);height:100%;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;animation:slideRight .3s ease;direction:rtl}
+@keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.side-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.side-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--wg)}
+.hist-item{background:var(--wc);border:1px solid var(--wb);border-radius:10px;padding:.8rem;margin-bottom:.6rem;cursor:pointer;transition:border-color .2s}
+.hist-item:hover{border-color:var(--wgd)}
+.hi-name{font-weight:500;font-size:.9rem;margin-bottom:.2rem}
+.hi-meta{font-size:.75rem;color:var(--wm);line-height:1.5}
+
+/* SETTINGS */
+.settings-panel{position:fixed;inset:0;z-index:300;display:none}
+.settings-panel.open{display:flex;align-items:flex-end;justify-content:center}
+.settings-content{width:100%;max-width:520px;background:var(--ws);border-radius:20px 20px 0 0;border:1px solid var(--wb);border-bottom:none;padding:1.5rem 1.5rem 2rem;animation:slideUp .3s ease;direction:rtl}
+.si{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid var(--wb)}
+.si:last-child{border-bottom:none}
+.btn-danger{background:rgba(139,26,42,.2);border:1px solid rgba(139,26,42,.4);color:#f4a0ad;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-family:'Heebo',sans-serif;cursor:pointer}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
+.confirm-overlay.active{display:flex}
+.confirm-box{background:var(--wc);border:1px solid var(--wb);border-radius:16px;padding:1.5rem;max-width:320px;width:100%;text-align:center}
+.ct{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--wg);margin-bottom:.6rem}
+.cx{color:var(--wm);font-size:.85rem;margin-bottom:1.2rem;line-height:1.5}
+.cbtns{display:flex;gap:.6rem}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--wb);border-radius:2px}
+@media(max-width:400px){.slot{min-width:50px;min-height:56px}.slot-wname{font-size:.58rem}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">מתחבר למסד הנתונים...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONNECT SCREEN -->
+<div id="connect-screen" class="screen">
+  <div class="connect-box">
+    <div style="font-size:2.5rem;text-align:center;margin-bottom:.5rem">🍷</div>
+    <div class="connect-title">מקרר היין שלי</div>
+    <div class="connect-sub">חבר את האפליקציה ל-Supabase כדי לשמור את הנתונים בענן ולגשת מכל מכשיר</div>
+
+    <div class="connect-hint">
+      <b>איך מקבלים את הפרטים?</b><br>
+      1. היכנס ל-supabase.com וצור פרויקט<br>
+      2. לך ל-Settings → API<br>
+      3. העתק את ה-URL וה-anon key
+    </div>
+
+    <label class="clbl">Supabase Project URL</label>
+    <input type="text" class="cinp" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+
+    <label class="clbl">Supabase Anon Key</label>
+    <input type="text" class="cinp" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+
+    <div style="margin-top:1rem">
+      <button class="btn-primary" onclick="connectSupabase()">התחבר ←</button>
+    </div>
+    <div style="margin-top:.8rem;text-align:center">
+      <span style="color:var(--wm);font-size:.78rem">הפרטים נשמרים רק במכשיר שלך</span>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen">
+  <div class="setup-box">
+    <div style="font-size:3rem;color:var(--wg);line-height:1;margin-bottom:.3rem">🍷</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--wg);margin-bottom:.2rem">הגדרת המקרר</div>
+    <div style="color:var(--wm);font-size:.9rem;margin-bottom:2rem;font-weight:300">הגדרה ראשונית</div>
+    <label class="slbl">כמה קומות יש במקרר?</label>
+    <input type="number" id="setup-rows" class="sinp" min="1" max="30" value="6">
+    <label class="slbl">כמה תאים בכל קומה?</label>
+    <input type="number" id="setup-cols" class="sinp" min="1" max="20" value="4">
+    <label class="slbl">תמונת המקרר (אופציונלי)</label>
+    <button type="button" class="pbtn" id="setup-photo-btn">📷 העלה תמונה / צלם את המקרר</button>
+    <input type="file" id="setup-photo-input" accept="image/*" style="display:none">
+    <div class="ppwrap" id="setup-ppwrap">
+      <img id="setup-ppimg" class="ppimg">
+      <button type="button" class="pchbtn" id="setup-pch-btn">🔄 החלף תמונה</button>
+    </div>
+    <button class="btn-primary" onclick="setupFridge()">צור את המקרר שלי ←</button>
+  </div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="main-screen" class="screen">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.3rem">🍷</span>
+      <div class="app-title">מקרר היין</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleSearch()">🔍</button>
+      <button class="icon-btn" onclick="openHistory()">📋</button>
+      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    </div>
+  </div>
+  <div class="fridge-banner" id="fridge-banner">
+    <img id="fridge-banner-img" src="">
+    <div class="fridge-banner-ov">
+      <button class="fbchbtn" id="banner-change-btn">🔄 עדכן תמונת מקרר</button>
+      <input type="file" id="banner-photo-input" accept="image/*" style="display:none">
+    </div>
+  </div>
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="search-panel" id="search-panel">
+    <input type="text" class="sfield" id="search-field" placeholder="חפש יין..." oninput="renderGrid()">
+    <div class="filter-chips">
+      <span class="chip active" data-filter="all" onclick="setFilter('all',this)">הכל</span>
+      <span class="chip" data-filter="red" onclick="setFilter('red',this)">🔴 אדום</span>
+      <span class="chip" data-filter="white" onclick="setFilter('white',this)">🟡 לבן</span>
+      <span class="chip" data-filter="rose" onclick="setFilter('rose',this)">🌸 רוזה</span>
+      <span class="chip" data-filter="empty" onclick="setFilter('empty',this)">ריק</span>
+    </div>
+  </div>
+  <div class="fridge-section">
+    <div class="fridge-title">מפת המקרר</div>
+    <div id="col-labels" class="col-labels"></div>
+    <div class="fridge-grid" id="fridge-grid"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="add-modal-title">הוסף יין</div>
+    <input type="hidden" id="edit-key">
+    <div style="display:flex;gap:.8rem">
+      <div style="flex:1"><label class="flbl">קומה</label><input type="text" class="finp" id="field-row" readonly style="opacity:.6"></div>
+      <div style="flex:1"><label class="flbl">תא</label><input type="text" class="finp" id="field-slot" readonly style="opacity:.6"></div>
+    </div>
+    <label class="flbl">שם היין *</label>
+    <input type="text" class="finp" id="field-name" placeholder="לדוגמה: Opus One">
+    <label class="flbl">סוג יין</label>
+    <div class="type-radios">
+      <div class="type-radio"><input type="radio" name="wine-type" id="type-red" value="red"><label for="type-red">🔴 אדום</label></div>
+      <div class="type-radio"><input type="radio" name="wine-type" id="type-white" value="white"><label for="type-white">🟡 לבן</label></div>
+      <div class="type-radio"><input type="radio" name="wine-type" id="type-rose" value="rose"><label for="type-rose">🌸 רוזה</label></div>
+    </div>
+    <div style="display:flex;gap:.8rem">
+      <div style="flex:1"><label class="flbl">זן ענבים</label><input type="text" class="finp" id="field-grape" placeholder="מרלו, קברנה..."></div>
+      <div style="flex:1"><label class="flbl">שנת בציר</label><input type="number" class="finp" id="field-vintage" placeholder="2020" min="1900" max="2030"></div>
+    </div>
+    <div style="display:flex;gap:.8rem">
+      <div style="flex:1"><label class="flbl">אחוז אלכוהול</label><input type="number" class="finp" id="field-alcohol" placeholder="13.5" min="0" max="25" step="0.1"></div>
+      <div style="flex:1"><label class="flbl">מחיר (₪)</label><input type="number" class="finp" id="field-price" placeholder="120" min="0"></div>
+    </div>
+    <label class="flbl">תאריך הכנסה</label>
+    <select class="finp" id="date-option" onchange="toggleDatePicker()">
+      <option value="today">היום</option>
+      <option value="custom">תאריך אחר</option>
+    </select>
+    <input type="date" class="finp" id="field-date" style="display:none">
+    <label class="flbl">דירוג</label>
+    <div class="rating-row">
+      <div class="stars-row" id="stars-row">
+        <span class="star" data-val="1">★</span><span class="star" data-val="2">★</span><span class="star" data-val="3">★</span><span class="star" data-val="4">★</span><span class="star" data-val="5">★</span>
+      </div>
+      <div class="vivino-wrap">
+        <span style="font-size:.78rem;color:var(--wm)">Vivino:</span>
+        <input type="number" class="vinp" id="field-vivino" placeholder="4.2" min="1" max="5" step="0.1">
+      </div>
+    </div>
+    <label class="flbl">הערות</label>
+    <textarea class="finp" id="field-notes" rows="3" placeholder="תיאור טעם, התאמה לאוכל, כיצד היה היין..."></textarea>
+    <label class="flbl">תמונת הבקבוק</label>
+    <button type="button" class="pbtn" id="wine-photo-btn">📷 העלה תמונה / צלם את הבקבוק</button>
+    <input type="file" id="wine-photo-input" accept="image/*" style="display:none">
+    <div class="ppwrap" id="wine-ppwrap">
+      <img id="wine-ppimg" class="ppimg">
+      <button type="button" class="pchbtn" id="wine-pch-btn">🔄 החלף תמונה</button>
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-save" onclick="saveWine()">שמור יין</button>
+      <button class="btn-cancel" onclick="closeModal('add-modal')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal"><div class="modal" id="detail-content"></div></div>
+<!-- HISTORY DETAIL MODAL -->
+<div class="modal-overlay" id="hist-detail-modal"><div class="modal" id="hist-detail-content"></div></div>
+
+<!-- HISTORY PANEL -->
+<div class="side-panel" id="history-panel">
+  <div class="side-ov" onclick="closePanel('history-panel')"></div>
+  <div class="side-content">
+    <div class="side-hdr"><div class="side-title">היסטוריה</div><button class="icon-btn" onclick="closePanel('history-panel')">✕</button></div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settings-panel">
+  <div class="side-ov" onclick="closePanel('settings-panel')" style="position:fixed;inset:0;z-index:-1"></div>
+  <div class="settings-content">
+    <div class="side-hdr"><div class="side-title">הגדרות</div><button class="icon-btn" onclick="closePanel('settings-panel')">✕</button></div>
+    <div class="si">
+      <span style="color:var(--wm);font-size:.9rem">תמונת מקרר</span>
+      <button class="pbtn" style="width:auto;padding:.35rem .8rem;font-size:.8rem;margin:0" id="settings-photo-btn">📷 עדכן תמונה</button>
+      <input type="file" id="settings-photo-input" accept="image/*" style="display:none">
+    </div>
+    <div class="si"><span style="color:var(--wm);font-size:.9rem">קומות</span><span id="s-rows" style="font-weight:500"></span></div>
+    <div class="si"><span style="color:var(--wm);font-size:.9rem">תאים בכל קומה</span><span id="s-cols" style="font-weight:500"></span></div>
+    <div class="si"><span style="color:var(--wm);font-size:.9rem">סה"כ מקומות</span><span id="s-total" style="font-weight:500"></span></div>
+    <div class="si"><span style="color:var(--wm);font-size:.9rem">מחובר ל-Supabase</span><span style="color:#6fcf97;font-size:.85rem">✓ פעיל</span></div>
+    <div style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.6rem">
+      <button class="btn-danger" onclick="confirmReset()">אפס את המקרר לחלוטין</button>
+      <button class="btn-danger" style="background:rgba(0,0,0,.2);border-color:var(--wb);color:var(--wm)" onclick="disconnectSupabase()">החלף חשבון Supabase</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="ct" id="confirm-title"></div>
+    <div class="cx" id="confirm-text"></div>
+    <div class="cbtns">
+      <button class="btn-save" id="confirm-ok">אישור</button>
+      <button class="btn-cancel" onclick="document.getElementById('confirm-overlay').classList.remove('active')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE CLIENT (lightweight fetch-based)
+// ═══════════════════════════════════════
+let SB_URL = '', SB_KEY = '';
+
+function sbFetch(path, method='GET', body=null){
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST' ? 'return=representation' : ''
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  return fetch(SB_URL + '/rest/v1/' + path, opts).then(async r=>{
+    const text = await r.text();
+    if(!r.ok) throw new Error(text);
+    return text ? JSON.parse(text) : null;
+  });
+}
+
+const db = {
+  async getConfig(){ return sbFetch('fridge_config?select=*&limit=1'); },
+  async upsertConfig(data){ return sbFetch('fridge_config?on_conflict=id', 'POST', data); },
+  async updateConfig(id, data){ return sbFetch(`fridge_config?id=eq.${id}`, 'PATCH', data); },
+  async getSlots(){ return sbFetch('wine_slots?select=*'); },
+  async upsertSlot(data){ return sbFetch('wine_slots?on_conflict=slot_key', 'POST', data); },
+  async deleteSlot(key){ return sbFetch(`wine_slots?slot_key=eq.${encodeURIComponent(key)}`, 'DELETE'); },
+  async getHistory(){ return sbFetch('wine_history?select=*&order=created_at.desc'); },
+  async addHistory(data){ return sbFetch('wine_history', 'POST', data); },
+  async deleteAllSlots(){ return sbFetch('wine_slots?id=neq.00000000-0000-0000-0000-000000000000', 'DELETE'); },
+  async deleteAllHistory(){ return sbFetch('wine_history?id=neq.00000000-0000-0000-0000-000000000000', 'DELETE'); },
+  async deleteConfig(id){ return sbFetch(`fridge_config?id=eq.${id}`, 'DELETE'); }
+};
+
+// ═══════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════
+let config = null, configId = null;
+let slots = {};      // key -> wine object
+let historyLog = []; // array of wine objects
+let currentRating = 0, currentFilter = 'all';
+let winePhotoData = null, fridgePhotoData = null;
+
+const TL = {red:'אדום',white:'לבן',rose:'רוזה'};
+const TE = {red:'🔴',white:'🟡',rose:'🌸'};
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+async function init(){
+  SB_URL = localStorage.getItem('sb_url') || '';
+  SB_KEY = localStorage.getItem('sb_key') || '';
+
+  if(!SB_URL || !SB_KEY){
+    hideLoading();
+    show('connect-screen');
+    return;
+  }
+  try {
+    await loadFromDB();
+  } catch(e) {
+    hideLoading();
+    showToast('שגיאה בחיבור למסד הנתונים', true);
+    show('connect-screen');
+  }
+}
+
+async function loadFromDB(){
+  showLoading();
+  const [cfgArr, slotArr, histArr] = await Promise.all([
+    db.getConfig(), db.getSlots(), db.getHistory()
+  ]);
+
+  if(!cfgArr || cfgArr.length === 0){
+    hideLoading();
+    setupPhotoButtons();
+    show('setup-screen');
+    return;
+  }
+
+  const cfg = cfgArr[0];
+  configId = cfg.id;
+  config = {rows: cfg.rows, cols: cfg.cols};
+  fridgePhotoData = cfg.fridge_photo || null;
+
+  slots = {};
+  (slotArr||[]).forEach(w => { slots[w.slot_key] = dbRowToWine(w); });
+
+  historyLog = (histArr||[]).map(dbRowToWine);
+
+  hideLoading();
+  setupPhotoButtons();
+  renderBanner();
+  renderGrid();
+  renderStats();
+  show('main-screen');
+}
+
+function dbRowToWine(row){
+  return {
+    name: row.name, type: row.type, grape: row.grape,
+    vintage: row.vintage, alcohol: row.alcohol, price: row.price,
+    date: row.date_added, dateRemoved: row.date_removed,
+    rating: row.rating, vivino: row.vivino, notes: row.notes,
+    photo: row.photo
+  };
+}
+
+function wineToDbRow(wine, key){
+  return {
+    slot_key: key, name: wine.name, type: wine.type, grape: wine.grape||null,
+    vintage: wine.vintage||null, alcohol: wine.alcohol||null, price: wine.price||null,
+    date_added: wine.date||null, rating: wine.rating||null,
+    vivino: wine.vivino||null, notes: wine.notes||null, photo: wine.photo||null
+  };
+}
+
+function histToDbRow(wine){
+  return {
+    name: wine.name, type: wine.type, grape: wine.grape||null,
+    vintage: wine.vintage||null, alcohol: wine.alcohol||null, price: wine.price||null,
+    date_added: wine.date||null, date_removed: wine.dateRemoved||null,
+    rating: wine.rating||null, vivino: wine.vivino||null,
+    notes: wine.notes||null
+  };
+}
+
+// ═══════════════════════════════════════
+// CONNECT
+// ═══════════════════════════════════════
+async function connectSupabase(){
+  const url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('sb-key').value.trim();
+  if(!url || !key){ showToast('נא למלא URL ו-Key', true); return; }
+
+  showLoading();
+  SB_URL = url; SB_KEY = key;
+  try {
+    await db.getConfig(); // test connection
+    localStorage.setItem('sb_url', url);
+    localStorage.setItem('sb_key', key);
+    await loadFromDB();
+  } catch(e) {
+    hideLoading();
+    showToast('לא ניתן להתחבר — בדוק את הפרטים', true);
+    SB_URL=''; SB_KEY='';
+  }
+}
+
+function disconnectSupabase(){
+  localStorage.removeItem('sb_url');
+  localStorage.removeItem('sb_key');
+  SB_URL=''; SB_KEY='';
+  location.reload();
+}
+
+// ═══════════════════════════════════════
+// PHOTO BUTTONS
+// ═══════════════════════════════════════
+function setupPhotoButtons(){
+  const spi = document.getElementById('setup-photo-input');
+  document.getElementById('setup-photo-btn').onclick = ()=>spi.click();
+  document.getElementById('setup-pch-btn').onclick = ()=>spi.click();
+  spi.onchange = ()=>readFile(spi, data=>{
+    fridgePhotoData = data;
+    document.getElementById('setup-ppimg').src = data;
+    document.getElementById('setup-ppwrap').style.display = 'block';
+  });
+
+  const bpi = document.getElementById('banner-photo-input');
+  document.getElementById('banner-change-btn').onclick = ()=>bpi.click();
+  bpi.onchange = ()=>readFile(bpi, async data=>{
+    fridgePhotoData = data;
+    if(configId) await db.updateConfig(configId, {fridge_photo: data});
+    renderBanner();
+    showToast('תמונת המקרר עודכנה');
+  });
+
+  const stpi = document.getElementById('settings-photo-input');
+  document.getElementById('settings-photo-btn').onclick = ()=>stpi.click();
+  stpi.onchange = ()=>readFile(stpi, async data=>{
+    fridgePhotoData = data;
+    if(configId) await db.updateConfig(configId, {fridge_photo: data});
+    renderBanner(); closePanel('settings-panel');
+    showToast('תמונת המקרר עודכנה');
+  });
+
+  const wpi = document.getElementById('wine-photo-input');
+  document.getElementById('wine-photo-btn').onclick = ()=>wpi.click();
+  document.getElementById('wine-pch-btn').onclick = ()=>wpi.click();
+  wpi.onchange = ()=>{
+    if(!wpi.files[0]) return;
+    if(wpi.files[0].size > 2*1024*1024){ showToast('תמונה גדולה מדי (מקסימום 2MB)', true); return; }
+    readFile(wpi, data=>{
+      winePhotoData = data;
+      document.getElementById('wine-ppimg').src = data;
+      document.getElementById('wine-ppwrap').style.display = 'block';
+    });
+  };
+}
+
+function readFile(input, cb){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>cb(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════
+async function setupFridge(){
+  const rows = parseInt(document.getElementById('setup-rows').value);
+  const cols = parseInt(document.getElementById('setup-cols').value);
+  if(!rows||!cols||rows<1||cols<1){ showToast('נא להזין ערכים תקינים', true); return; }
+  showLoading();
+  try {
+    const result = await db.upsertConfig({rows, cols, fridge_photo: fridgePhotoData||null});
+    configId = result[0].id;
+    config = {rows, cols};
+    hideLoading();
+    renderBanner(); renderGrid(); renderStats();
+    show('main-screen');
+  } catch(e){
+    hideLoading();
+    showToast('שגיאה בשמירת ההגדרות', true);
+  }
+}
+
+// ═══════════════════════════════════════
+// GRID
+// ═══════════════════════════════════════
+function renderBanner(){
+  const banner = document.getElementById('fridge-banner');
+  if(fridgePhotoData){ document.getElementById('fridge-banner-img').src = fridgePhotoData; banner.style.display='block'; }
+  else{ banner.style.display='none'; }
+}
+
+function renderGrid(){
+  const grid = document.getElementById('fridge-grid');
+  const colLbls = document.getElementById('col-labels');
+  grid.innerHTML=''; colLbls.innerHTML='';
+  const spacer = document.createElement('div'); spacer.style.minWidth='22px'; colLbls.appendChild(spacer);
+  for(let c=0;c<config.cols;c++){const l=document.createElement('div');l.className='col-label';l.textContent=c+1;colLbls.appendChild(l);}
+  const sv=(document.getElementById('search-field')?.value||'').toLowerCase();
+  for(let ri=config.rows-1;ri>=0;ri--){
+    const row=document.createElement('div');row.className='fridge-row';
+    const lbl=document.createElement('div');lbl.className='row-label';lbl.textContent=ri;row.appendChild(lbl);
+    for(let c=0;c<config.cols;c++){
+      const key=`${ri}-${c}`;const wine=slots[key];
+      const slot=document.createElement('div');slot.className='slot';
+      let vis=true;
+      if(currentFilter==='red'&&(!wine||wine.type!=='red'))vis=false;
+      if(currentFilter==='white'&&(!wine||wine.type!=='white'))vis=false;
+      if(currentFilter==='rose'&&(!wine||wine.type!=='rose'))vis=false;
+      if(currentFilter==='empty'&&wine)vis=false;
+      if(sv&&(!wine||!wine.name.toLowerCase().includes(sv)))vis=false;
+      if(!vis)slot.style.opacity='.2';
+      if(wine){
+        slot.classList.add(wine.type);
+        const nm=document.createElement('div');nm.className='slot-wname';nm.textContent=wine.name;
+        const vy=document.createElement('div');vy.className='slot-yr';vy.textContent=wine.vintage||'';
+        const sn=document.createElement('div');sn.className='slot-num';sn.textContent=c+1;
+        slot.appendChild(nm);slot.appendChild(vy);slot.appendChild(sn);
+        slot.onclick=()=>openDetail(key);
+      } else {
+        slot.classList.add('empty');
+        const pl=document.createElement('div');pl.className='plus-icon';pl.textContent='+';
+        const sn=document.createElement('div');sn.className='slot-num';sn.textContent=c+1;
+        slot.appendChild(pl);slot.appendChild(sn);
+        slot.onclick=()=>openAdd(ri,c,key);
+      }
+      row.appendChild(slot);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function renderStats(){
+  const bar=document.getElementById('stats-bar');
+  let red=0,white=0,rose=0,total=0;
+  for(const k in slots){total++;const w=slots[k];if(w.type==='red')red++;else if(w.type==='white')white++;else rose++;}
+  const cap=config.rows*config.cols;
+  bar.innerHTML=`<div class="stat-item"><div class="sdot red"></div><span class="scnt">${red}</span><span class="slb"> אדום</span></div><div class="stat-item"><div class="sdot white"></div><span class="scnt">${white}</span><span class="slb"> לבן</span></div><div class="stat-item"><div class="sdot rose"></div><span class="scnt">${rose}</span><span class="slb"> רוזה</span></div><div class="stat-item"><div class="sdot empty"></div><span class="scnt">${total}/${cap}</span><span class="slb"> מקומות</span></div>`;
+}
+
+// ═══════════════════════════════════════
+// ADD / EDIT
+// ═══════════════════════════════════════
+function openAdd(ri,ci,key,editData=null){
+  winePhotoData=editData?.photo||null;
+  document.getElementById('add-modal-title').textContent=editData?'ערוך יין':'הוסף יין';
+  document.getElementById('edit-key').value=key;
+  document.getElementById('field-row').value=ri;
+  document.getElementById('field-slot').value=ci+1;
+  document.getElementById('field-name').value=editData?.name||'';
+  document.getElementById('field-grape').value=editData?.grape||'';
+  document.getElementById('field-vintage').value=editData?.vintage||'';
+  document.getElementById('field-alcohol').value=editData?.alcohol||'';
+  document.getElementById('field-price').value=editData?.price||'';
+  document.getElementById('field-notes').value=editData?.notes||'';
+  document.getElementById('field-vivino').value=editData?.vivino||'';
+  document.getElementById('date-option').value='today';
+  document.getElementById('field-date').style.display='none';
+  if(editData?.date){document.getElementById('date-option').value='custom';document.getElementById('field-date').value=editData.date;document.getElementById('field-date').style.display='block';}
+  document.querySelectorAll('input[name="wine-type"]').forEach(r=>r.checked=editData?r.value===editData.type:r.value==='red');
+  if(!editData)document.getElementById('type-red').checked=true;
+  currentRating=editData?.rating||0;updateStars();
+  const ww=document.getElementById('wine-ppwrap');const wi=document.getElementById('wine-ppimg');
+  if(winePhotoData){wi.src=winePhotoData;ww.style.display='block';}else{wi.src='';ww.style.display='none';}
+  document.getElementById('wine-photo-input').value='';
+  document.getElementById('add-modal').classList.add('active');
+}
+
+function toggleDatePicker(){
+  const opt=document.getElementById('date-option').value;
+  const dp=document.getElementById('field-date');
+  dp.style.display=opt==='custom'?'block':'none';
+  if(opt==='custom')dp.valueAsDate=new Date();
+}
+
+document.querySelectorAll('.star').forEach(star=>{
+  star.addEventListener('mouseover',()=>hiStars(parseInt(star.dataset.val)));
+  star.addEventListener('mouseout',()=>updateStars());
+  star.addEventListener('click',()=>{currentRating=parseInt(star.dataset.val);updateStars();});
+});
+function hiStars(n){document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('active',i<n));}
+function updateStars(){document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('active',i<currentRating));}
+
+async function saveWine(){
+  const name=document.getElementById('field-name').value.trim();
+  if(!name){showToast('נא להזין שם יין',true);return;}
+  const typeEl=document.querySelector('input[name="wine-type"]:checked');
+  if(!typeEl){showToast('נא לבחור סוג יין',true);return;}
+  const key=document.getElementById('edit-key').value;
+  const dopt=document.getElementById('date-option').value;
+  const dval=dopt==='custom'?document.getElementById('field-date').value:new Date().toISOString().split('T')[0];
+  const wine={
+    name, type:typeEl.value,
+    grape:document.getElementById('field-grape').value||null,
+    vintage:document.getElementById('field-vintage').value||null,
+    alcohol:document.getElementById('field-alcohol').value||null,
+    price:document.getElementById('field-price').value||null,
+    date:dval, rating:currentRating||null,
+    vivino:document.getElementById('field-vivino').value||null,
+    notes:document.getElementById('field-notes').value.trim()||null,
+    photo:winePhotoData||null
+  };
+  showLoading();
+  try {
+    await db.upsertSlot(wineToDbRow(wine, key));
+    slots[key]=wine;
+    hideLoading();
+    closeModal('add-modal');closeModal('detail-modal');
+    renderGrid();renderStats();
+    showToast('היין נשמר בהצלחה');
+  } catch(e){
+    hideLoading();
+    showToast('שגיאה בשמירה: '+e.message, true);
+  }
+}
+
+// ═══════════════════════════════════════
+// DETAIL
+// ═══════════════════════════════════════
+function openDetail(key){
+  const wine=slots[key];if(!wine)return;
+  buildDetail('detail-content',wine,key,false);
+  document.getElementById('detail-modal').classList.add('active');
+}
+
+function buildDetail(cid,wine,key,isHist){
+  const sh='★'.repeat(wine.rating||0)+'☆'.repeat(5-(wine.rating||0));
+  const parts=key?key.split('-'):[null,null];
+  const r=parts[0],c=parts[1];
+  const el=document.getElementById(cid);
+  const priceStr = wine.price ? '₪'+parseFloat(wine.price).toLocaleString() : null;
+  const alcoholStr = wine.alcohol ? wine.alcohol+'%' : null;
+  el.innerHTML=`
+    <div class="mhandle"></div>
+    ${wine.photo?`<img style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:1rem" src="${wine.photo}">`:''}
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <div class="dtbadge ${wine.type}">${TE[wine.type]} ${TL[wine.type]}</div>
+      ${wine.grape?`<span style="background:rgba(201,169,110,.1);border:1px solid var(--wb);color:var(--wm);font-size:.75rem;padding:2px 8px;border-radius:10px">${wine.grape}</span>`:''}
+    </div>
+    <div class="dtwname">${wine.name}</div>
+    <div class="dtvint">${wine.vintage?wine.vintage+' • ':''}${TL[wine.type]}</div>
+    <div class="dtmeta">
+      ${!isHist&&r!==null?`<div class="dtmi"><div class="dtml">מיקום</div><div class="dtmv">קומה ${r}, תא ${parseInt(c)+1}</div></div>`:''}
+      <div class="dtmi"><div class="dtml">הוכנס</div><div class="dtmv">${wine.date||'—'}</div></div>
+      ${isHist&&wine.dateRemoved?`<div class="dtmi"><div class="dtml">הוצא</div><div class="dtmv">${wine.dateRemoved}</div></div>`:''}
+      ${wine.rating?`<div class="dtmi"><div class="dtml">דירוג</div><div class="dtmv" style="color:var(--wg)">${sh}</div></div>`:''}
+      ${wine.vivino?`<div class="dtmi"><div class="dtml">Vivino</div><div class="dtmv">⭐ ${wine.vivino}</div></div>`:''}
+      ${alcoholStr?`<div class="dtmi"><div class="dtml">אלכוהול</div><div class="dtmv">${alcoholStr}</div></div>`:''}
+      ${priceStr?`<div class="dtmi"><div class="dtml">מחיר</div><div class="dtmv">${priceStr}</div></div>`:''}
+    </div>
+    ${wine.notes?`<div style="background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">הערות</div><div style="font-size:.9rem;color:var(--wt);line-height:1.6;white-space:pre-wrap">${wine.notes}</div></div>`:''}
+    ${!isHist?`<div class="modal-btn-row"><button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button><button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא מהמקרר</button></div>`:''}
+    <div style="margin-top:.8rem"><button class="btn-cancel" style="width:100%" onclick="closeModal('${isHist?'hist-detail-modal':'detail-modal'}')">סגור</button></div>
+  `;
+}
+
+function startEdit(key){
+  const wine=slots[key];if(!wine)return;
+  const[r,c]=key.split('-');
+  closeModal('detail-modal');
+  setTimeout(()=>openAdd(parseInt(r),parseInt(c),key,wine),80);
+}
+
+async function confirmRemove(key){
+  const wine=slots[key];
+  showConfirm('הוצאת בקבוק',`האם להוציא את "${wine.name}" מהמקרר?`, async()=>{
+    showLoading();
+    try {
+      const removed={...wine, dateRemoved:new Date().toISOString().split('T')[0]};
+      await Promise.all([db.deleteSlot(key), db.addHistory(histToDbRow(removed))]);
+      historyLog.unshift(removed);
+      delete slots[key];
+      hideLoading();
+      closeModal('detail-modal');
+      renderGrid();renderStats();
+      showToast('הבקבוק הועבר להיסטוריה');
+    } catch(e){
+      hideLoading();
+      showToast('שגיאה: '+e.message, true);
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════
+function openHistory(){
+  const list=document.getElementById('history-list');
+  if(!historyLog.length){
+    list.innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:2rem">אין עדיין בקבוקים בהיסטוריה</div>';
+  } else {
+    list.innerHTML=historyLog.map((w,i)=>`
+      <div class="hist-item" onclick="openHistDetail(${i})">
+        <div class="hi-name">${TE[w.type]} ${w.name}${w.grape?' · <span style="color:var(--wm);font-size:.8rem">'+w.grape+'</span>':''}</div>
+        <div class="hi-meta">
+          ${w.vintage?w.vintage+' · ':''}הוכנס: ${w.date||'—'}${w.dateRemoved?' · הוצא: '+w.dateRemoved:''}
+          ${w.price?' · ₪'+parseFloat(w.price).toLocaleString():''}
+        </div>
+        <div style="display:flex;gap:.8rem;margin-top:.3rem;flex-wrap:wrap">
+          ${w.rating?`<span style="color:var(--wg);font-size:.8rem">${'★'.repeat(w.rating)}</span>`:''}
+          ${w.vivino?`<span style="font-size:.78rem;color:var(--wm)">Vivino ${w.vivino}</span>`:''}
+          ${w.alcohol?`<span style="font-size:.78rem;color:var(--wm)">${w.alcohol}% אלכוהול</span>`:''}
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('history-panel').classList.add('open');
+}
+
+function openHistDetail(idx){
+  closePanel('history-panel');
+  setTimeout(()=>{
+    buildDetail('hist-detail-content', historyLog[idx], null, true);
+    document.getElementById('hist-detail-modal').classList.add('active');
+  }, 320);
+}
+
+// ═══════════════════════════════════════
+// SEARCH / FILTER
+// ═══════════════════════════════════════
+function toggleSearch(){
+  const p=document.getElementById('search-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open'))document.getElementById('search-field').focus();
+  else{document.getElementById('search-field').value='';currentFilter='all';document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter==='all'));renderGrid();}
+}
+function setFilter(f,el){currentFilter=f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===el));renderGrid();}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function openSettings(){
+  document.getElementById('s-rows').textContent=config.rows;
+  document.getElementById('s-cols').textContent=config.cols;
+  document.getElementById('s-total').textContent=config.rows*config.cols+' בקבוקים';
+  document.getElementById('settings-panel').classList.add('open');
+}
+
+async function confirmReset(){
+  showConfirm('אפס מקרר','פעולה זו תמחק את כל הנתונים מהשרת לצמיתות.', async()=>{
+    showLoading();
+    try {
+      await Promise.all([db.deleteAllSlots(), db.deleteAllHistory(), db.deleteConfig(configId)]);
+      hideLoading();
+      location.reload();
+    } catch(e){
+      hideLoading();
+      showToast('שגיאה: '+e.message, true);
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function closePanel(id){document.getElementById(id).classList.remove('open');}
+function showLoading(){document.getElementById('loading-screen').classList.remove('hidden');}
+function hideLoading(){document.getElementById('loading-screen').classList.add('hidden');}
+
+let toastTimer;
+function showToast(msg, isError=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(isError?' error':'');
+  requestAnimationFrame(()=>t.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function showConfirm(title,text,onOk){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-text').textContent=text;
+  document.getElementById('confirm-ok').onclick=()=>{onOk();document.getElementById('confirm-overlay').classList.remove('active');};
+  document.getElementById('confirm-overlay').classList.add('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('active');});
+});
+
+init();
+</script>
+</body>
+</html>
