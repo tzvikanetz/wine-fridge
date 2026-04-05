@@ -681,10 +681,25 @@ function renderGrid(){
 
 function renderStats(){
   const bar=document.getElementById('stats-bar');
-  let red=0,white=0,rose=0,total=0;
-  for(const k in slots){total++;const w=slots[k];if(w.type==='red')red++;else if(w.type==='white')white++;else rose++;}
+  let red=0,white=0,rose=0,total=0,totalPrice=0,vivinoSum=0,vivinoCount=0;
+  for(const k in slots){
+    total++;
+    const w=slots[k];
+    if(w.type==='red')red++;else if(w.type==='white')white++;else rose++;
+    if(w.price) totalPrice+=parseFloat(w.price);
+    if(w.vivino) {vivinoSum+=parseFloat(w.vivino);vivinoCount++;}
+  }
   const cap=config.rows*config.cols;
-  bar.innerHTML=`<div class="stat-item"><div class="sdot red"></div><span class="scnt">${red}</span><span class="slb"> אדום</span></div><div class="stat-item"><div class="sdot white"></div><span class="scnt">${white}</span><span class="slb"> לבן</span></div><div class="stat-item"><div class="sdot rose"></div><span class="scnt">${rose}</span><span class="slb"> רוזה</span></div><div class="stat-item"><div class="sdot empty"></div><span class="scnt">${total}/${cap}</span><span class="slb"> מקומות</span></div>`;
+  const vivinoAvg = vivinoCount>0 ? (vivinoSum/vivinoCount).toFixed(1) : null;
+  const priceStr = totalPrice>0 ? '₪'+Math.round(totalPrice).toLocaleString() : null;
+  bar.innerHTML=`
+    <div class="stat-item"><div class="sdot red"></div><span class="scnt">${red}</span><span class="slb"> אדום</span></div>
+    <div class="stat-item"><div class="sdot white"></div><span class="scnt">${white}</span><span class="slb"> לבן</span></div>
+    <div class="stat-item"><div class="sdot rose"></div><span class="scnt">${rose}</span><span class="slb"> רוזה</span></div>
+    <div class="stat-item"><div class="sdot empty"></div><span class="scnt">${total}/${cap}</span><span class="slb"> מקומות</span></div>
+    ${vivinoAvg?`<div class="stat-item"><span style="font-size:.8rem">⭐</span><span class="scnt">${vivinoAvg}</span><span class="slb"> Vivino ממוצע</span></div>`:''}
+    ${priceStr?`<div class="stat-item"><span style="font-size:.8rem">💰</span><span class="scnt">${priceStr}</span><span class="slb"> שווי מקרר</span></div>`:''}
+  `;
 }
 
 // ═══════════════════════════════════════
