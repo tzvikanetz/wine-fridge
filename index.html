@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -23,20 +24,27 @@ body{min-height:100vh;overflow-x:hidden}
 .screen{display:none;min-height:100vh}
 .screen.active{display:flex;flex-direction:column}
 
-/* CONNECT SCREEN */
-#connect-screen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2d0d20 0%,var(--wd) 70%);padding:1rem}
-.connect-box{background:var(--wc);border:1px solid var(--wb);border-radius:20px;padding:2rem;max-width:460px;width:100%}
-.connect-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--wg);text-align:center;margin-bottom:.3rem}
-.connect-sub{color:var(--wm);font-size:.85rem;text-align:center;margin-bottom:1.5rem;line-height:1.5}
-.step-label{display:flex;align-items:center;gap:.5rem;color:var(--wg);font-size:.8rem;font-weight:600;margin-bottom:.4rem;margin-top:1rem}
-.step-num{width:20px;height:20px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0}
-.clbl{display:block;color:var(--wm);font-size:.78rem;margin-bottom:.35rem;font-weight:500;margin-top:.8rem}
-.cinp{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.65rem .9rem;border-radius:9px;font-size:.88rem;font-family:'Heebo',sans-serif;margin-bottom:.6rem;transition:border-color .2s;direction:ltr;text-align:left}
-.cinp:focus{outline:none;border-color:var(--wg)}
-.connect-hint{background:rgba(201,169,110,.07);border:1px solid rgba(201,169,110,.2);border-radius:8px;padding:.7rem .9rem;font-size:.78rem;color:var(--wm);line-height:1.5;margin-bottom:1rem}
-.connect-hint b{color:var(--wg)}
+/* AUTH SCREEN */
+#auth-screen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2d0d20 0%,var(--wd) 70%);padding:1rem;min-height:100vh}
+.auth-box{background:var(--wc);border:1px solid var(--wb);border-radius:20px;padding:2.5rem;max-width:400px;width:100%;text-align:center}
+.auth-logo{font-size:3rem;margin-bottom:.3rem}
+.auth-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--wg);margin-bottom:.2rem}
+.auth-sub{color:var(--wm);font-size:.85rem;margin-bottom:2rem;font-weight:300}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--wb);border-radius:10px;overflow:hidden}
+.auth-tab{flex:1;padding:.65rem;font-size:.9rem;font-family:'Heebo',sans-serif;cursor:pointer;background:none;border:none;color:var(--wm);transition:all .2s}
+.auth-tab.active{background:var(--wa);color:var(--wt);font-weight:600}
+.albl{display:block;text-align:right;color:var(--wm);font-size:.78rem;margin-bottom:.35rem;font-weight:500;margin-top:.8rem}
+.ainp{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.75rem 1rem;border-radius:10px;font-size:1rem;font-family:'Heebo',sans-serif;margin-bottom:.3rem;transition:border-color .2s;direction:ltr;text-align:left}
+.ainp:focus{outline:none;border-color:var(--wg)}
+.auth-msg{font-size:.8rem;min-height:1.2rem;margin-bottom:.8rem;text-align:right}
+.auth-msg.error{color:#f4a0ad}
+.auth-msg.success{color:#6fcf97}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--wa),var(--wr));color:var(--wt);border:none;padding:.9rem;border-radius:12px;font-size:1rem;font-family:'Heebo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;margin-top:.3rem}
+.btn-primary:hover{opacity:.9}.btn-primary:active{transform:scale(.98)}
+.forgot-link{color:var(--wm);font-size:.78rem;cursor:pointer;margin-top:.6rem;display:block;text-decoration:underline}
+.forgot-link:hover{color:var(--wg)}
 
-/* SETUP SCREEN */
+/* SETUP */
 #setup-screen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2d0d20 0%,var(--wd) 70%);padding:1rem}
 .setup-box{background:var(--wc);border:1px solid var(--wb);border-radius:20px;padding:2.5rem;max-width:420px;width:100%;text-align:center}
 .slbl{display:block;text-align:right;color:var(--wm);font-size:.8rem;margin-bottom:.4rem;font-weight:500}
@@ -47,8 +55,6 @@ body{min-height:100vh;overflow-x:hidden}
 .ppwrap{margin-bottom:1.2rem;position:relative;display:none}
 .ppimg{width:100%;height:130px;object-fit:cover;border-radius:10px}
 .pchbtn{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.6);border:1px solid var(--wb);color:var(--wt);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:'Heebo',sans-serif}
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--wa),var(--wr));color:var(--wt);border:none;padding:.9rem;border-radius:12px;font-size:1rem;font-family:'Heebo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s}
-.btn-primary:hover{opacity:.9}.btn-primary:active{transform:scale(.98)}
 
 /* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--wd);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:1rem}
@@ -116,7 +122,6 @@ textarea.finp{resize:vertical;min-height:70px}
 .stars-row{display:flex;gap:.3rem;font-size:1.4rem;cursor:pointer}
 .star{color:var(--wb);transition:color .1s;user-select:none}
 .star.active{color:var(--wg)}
-.vivino-wrap{display:flex;align-items:center;gap:.5rem}
 .vinp{width:75px;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.4rem .6rem;border-radius:8px;font-size:.95rem;font-family:'Heebo',sans-serif;text-align:center}
 .vinp:focus{outline:none;border-color:var(--wg)}
 .modal-btn-row{display:flex;gap:.8rem;margin-top:.5rem}
@@ -124,8 +129,6 @@ textarea.finp{resize:vertical;min-height:70px}
 .btn-save:hover{opacity:.88}
 .btn-cancel{flex:1;background:none;border:1px solid var(--wb);color:var(--wm);padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
 .btn-cancel:hover{border-color:var(--wm);color:var(--wt)}
-
-/* DETAIL */
 .dtbadge{display:inline-block;padding:.25rem .8rem;border-radius:20px;font-size:.8rem;margin-bottom:.8rem;font-weight:500}
 .dtbadge.red{background:rgba(139,26,42,.35);color:#f4a0ad;border:1px solid rgba(139,26,42,.5)}
 .dtbadge.white{background:rgba(201,161,42,.25);color:#e8d080;border:1px solid rgba(201,161,42,.4)}
@@ -136,13 +139,10 @@ textarea.finp{resize:vertical;min-height:70px}
 .dtmi{background:var(--wc);border-radius:8px;padding:.6rem .8rem}
 .dtml{font-size:.7rem;color:var(--wm);margin-bottom:.1rem}
 .dtmv{font-size:.9rem;color:var(--wt);font-weight:500}
-.dtnotes{background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem;font-size:.9rem;color:var(--wm);line-height:1.6;white-space:pre-wrap}
 .btn-remove{flex:1;background:rgba(139,26,42,.25);border:1px solid rgba(139,26,42,.5);color:#f4a0ad;padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
 .btn-remove:hover{background:rgba(139,26,42,.45)}
 .btn-edit{flex:1;background:rgba(201,169,110,.12);border:1px solid var(--wgd);color:var(--wg);padding:.8rem;border-radius:10px;font-size:.95rem;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .2s}
 .btn-edit:hover{background:rgba(201,169,110,.2)}
-
-/* SEARCH */
 .search-panel{background:var(--wc);border-bottom:1px solid var(--wb);padding:.8rem 1.2rem;display:none}
 .search-panel.open{display:block}
 .sfield{width:100%;background:var(--ws);border:1px solid var(--wb);color:var(--wt);padding:.6rem .9rem;border-radius:9px;font-size:.9rem;font-family:'Heebo',sans-serif;margin-bottom:.6rem}
@@ -150,8 +150,6 @@ textarea.finp{resize:vertical;min-height:70px}
 .filter-chips{display:flex;gap:.5rem;flex-wrap:wrap}
 .chip{padding:.3rem .7rem;border:1px solid var(--wb);border-radius:20px;font-size:.78rem;cursor:pointer;color:var(--wm);transition:all .18s}
 .chip.active{border-color:var(--wg);color:var(--wg);background:rgba(201,169,110,.08)}
-
-/* SIDE PANELS */
 .side-panel{position:fixed;inset:0;z-index:300;display:none}
 .side-panel.open{display:flex}
 .side-ov{flex:1;background:rgba(0,0,0,.6)}
@@ -163,14 +161,21 @@ textarea.finp{resize:vertical;min-height:70px}
 .hist-item:hover{border-color:var(--wgd)}
 .hi-name{font-weight:500;font-size:.9rem;margin-bottom:.2rem}
 .hi-meta{font-size:.75rem;color:var(--wm);line-height:1.5}
-
-/* SETTINGS */
 .settings-panel{position:fixed;inset:0;z-index:300;display:none}
 .settings-panel.open{display:flex;align-items:flex-end;justify-content:center}
 .settings-content{width:100%;max-width:520px;background:var(--ws);border-radius:20px 20px 0 0;border:1px solid var(--wb);border-bottom:none;padding:1.5rem 1.5rem 2rem;animation:slideUp .3s ease;direction:rtl}
 .si{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid var(--wb)}
 .si:last-child{border-bottom:none}
 .btn-danger{background:rgba(139,26,42,.2);border:1px solid rgba(139,26,42,.4);color:#f4a0ad;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-family:'Heebo',sans-serif;cursor:pointer}
+
+/* ADMIN PANEL */
+.admin-panel{position:fixed;inset:0;z-index:300;display:none}
+.admin-panel.open{display:flex;align-items:flex-end;justify-content:center}
+.admin-content{width:100%;max-width:520px;background:var(--ws);border-radius:20px 20px 0 0;border:1px solid var(--wg);border-bottom:none;padding:1.5rem 1.5rem 2rem;animation:slideUp .3s ease;direction:rtl;max-height:80vh;overflow-y:auto}
+.admin-badge{background:rgba(201,169,110,.15);border:1px solid var(--wg);color:var(--wg);font-size:.72rem;padding:2px 8px;border-radius:10px;font-weight:500}
+.user-row{background:var(--wc);border:1px solid var(--wb);border-radius:8px;padding:.7rem .9rem;margin-bottom:.5rem}
+.user-email{font-size:.88rem;font-weight:500;margin-bottom:.2rem}
+.user-meta{font-size:.72rem;color:var(--wm)}
 
 /* CONFIRM */
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
@@ -186,40 +191,46 @@ textarea.finp{resize:vertical;min-height:70px}
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-screen" id="loading-screen">
   <div class="spinner"></div>
-  <div class="loading-text">מתחבר למסד הנתונים...</div>
+  <div class="loading-text">טוען...</div>
 </div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- CONNECT SCREEN -->
-<div id="connect-screen" class="screen">
-  <div class="connect-box">
-    <div style="font-size:2.5rem;text-align:center;margin-bottom:.5rem">🍷</div>
-    <div class="connect-title">מקרר היין שלי</div>
-    <div class="connect-sub">חבר את האפליקציה ל-Supabase כדי לשמור את הנתונים בענן ולגשת מכל מכשיר</div>
-
-    <div class="connect-hint">
-      <b>איך מקבלים את הפרטים?</b><br>
-      1. היכנס ל-supabase.com וצור פרויקט<br>
-      2. לך ל-Settings → API<br>
-      3. העתק את ה-URL וה-anon key
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="screen">
+  <div class="auth-box">
+    <div class="auth-logo">🍷</div>
+    <div class="auth-title">מקרר היין שלי</div>
+    <div class="auth-sub">נהל את אוסף היינות שלך</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">התחברות</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">הרשמה</button>
     </div>
-
-    <label class="clbl">Supabase Project URL</label>
-    <input type="text" class="cinp" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
-
-    <label class="clbl">Supabase Anon Key</label>
-    <input type="text" class="cinp" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-
-    <div style="margin-top:1rem">
-      <button class="btn-primary" onclick="connectSupabase()">התחבר ←</button>
+    <div id="login-form">
+      <label class="albl">כתובת מייל</label>
+      <input type="email" class="ainp" id="login-email" placeholder="your@email.com" autocomplete="email">
+      <label class="albl">סיסמה</label>
+      <input type="password" class="ainp" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      <div class="auth-msg error" id="login-msg"></div>
+      <button class="btn-primary" onclick="doLogin()">התחבר</button>
+      <span class="forgot-link" onclick="doForgot()">שכחתי סיסמה</span>
     </div>
-    <div style="margin-top:.8rem;text-align:center">
-      <span style="color:var(--wm);font-size:.78rem">הפרטים נשמרים רק במכשיר שלך</span>
+    <div id="signup-form" style="display:none">
+      <label class="albl">כתובת מייל</label>
+      <input type="email" class="ainp" id="signup-email" placeholder="your@email.com" autocomplete="email">
+      <label class="albl">סיסמה (לפחות 6 תווים)</label>
+      <input type="password" class="ainp" id="signup-password" placeholder="••••••••" autocomplete="new-password">
+      <label class="albl">אימות סיסמה</label>
+      <input type="password" class="ainp" id="signup-password2" placeholder="••••••••" autocomplete="new-password">
+      <div class="auth-msg error" id="signup-msg"></div>
+      <button class="btn-primary" onclick="doSignup()">הירשם</button>
+    </div>
+    <div id="confirm-sent" style="display:none;text-align:center;padding:1rem 0">
+      <div style="font-size:2rem;margin-bottom:.5rem">📧</div>
+      <div style="color:var(--wg);font-weight:600;margin-bottom:.4rem">בדוק את המייל שלך</div>
+      <div style="color:var(--wm);font-size:.85rem;line-height:1.5">שלחנו לך קישור לאישור. לחץ עליו ואז חזור לכאן.</div>
+      <button class="btn-primary" style="margin-top:1rem" onclick="location.reload()">התחברתי — כניסה</button>
     </div>
   </div>
 </div>
@@ -253,6 +264,7 @@ textarea.finp{resize:vertical;min-height:70px}
       <div class="app-title">מקרר היין</div>
     </div>
     <div class="header-actions">
+      <button class="icon-btn" id="admin-btn" onclick="openAdmin()" style="display:none" title="אדמין">👑</button>
       <button class="icon-btn" onclick="toggleSearch()">🔍</button>
       <button class="icon-btn" onclick="openHistory()">📋</button>
       <button class="icon-btn" onclick="openSettings()">⚙️</button>
@@ -320,7 +332,7 @@ textarea.finp{resize:vertical;min-height:70px}
       <div class="stars-row" id="stars-row">
         <span class="star" data-val="1">★</span><span class="star" data-val="2">★</span><span class="star" data-val="3">★</span><span class="star" data-val="4">★</span><span class="star" data-val="5">★</span>
       </div>
-      <div class="vivino-wrap">
+      <div style="display:flex;align-items:center;gap:.5rem">
         <span style="font-size:.78rem;color:var(--wm)">Vivino:</span>
         <input type="number" class="vinp" id="field-vivino" placeholder="4.2" min="1" max="5" step="0.1">
       </div>
@@ -337,8 +349,8 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="ppwrap" id="wine-ppwrap">
       <img id="wine-ppimg" class="ppimg">
       <div style="display:flex;gap:.5rem;margin-top:.4rem">
-        <button type="button" class="pchbtn" style="position:static;background:var(--wc);border:1px solid var(--wb);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;color:var(--wt)" id="wine-pch-btn">🖼️ החלף מגלריה</button>
-        <button type="button" class="pchbtn" style="position:static;background:var(--wc);border:1px solid var(--wb);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;color:var(--wt)" id="wine-pch-cam-btn">📷 צלם מחדש</button>
+        <button type="button" style="flex:1;background:var(--wc);border:1px solid var(--wb);color:var(--wt);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif" id="wine-pch-btn">🖼️ החלף מגלריה</button>
+        <button type="button" style="flex:1;background:var(--wc);border:1px solid var(--wb);color:var(--wt);font-size:.75rem;padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif" id="wine-pch-cam-btn">📷 צלם מחדש</button>
       </div>
     </div>
     <div class="modal-btn-row">
@@ -348,9 +360,7 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detail-modal"><div class="modal" id="detail-content"></div></div>
-<!-- HISTORY DETAIL MODAL -->
 <div class="modal-overlay" id="hist-detail-modal"><div class="modal" id="hist-detail-content"></div></div>
 
 <!-- HISTORY PANEL -->
@@ -367,6 +377,7 @@ textarea.finp{resize:vertical;min-height:70px}
   <div class="side-ov" onclick="closePanel('settings-panel')" style="position:fixed;inset:0;z-index:-1"></div>
   <div class="settings-content">
     <div class="side-hdr"><div class="side-title">הגדרות</div><button class="icon-btn" onclick="closePanel('settings-panel')">✕</button></div>
+    <div class="si"><span style="color:var(--wm);font-size:.9rem">מחובר כ-</span><span id="s-email" style="font-size:.8rem;color:var(--wg)"></span></div>
     <div class="si">
       <span style="color:var(--wm);font-size:.9rem">תמונת מקרר</span>
       <button class="pbtn" style="width:auto;padding:.35rem .8rem;font-size:.8rem;margin:0" id="settings-photo-btn">📷 עדכן תמונה</button>
@@ -375,11 +386,27 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="si"><span style="color:var(--wm);font-size:.9rem">קומות</span><span id="s-rows" style="font-weight:500"></span></div>
     <div class="si"><span style="color:var(--wm);font-size:.9rem">תאים בכל קומה</span><span id="s-cols" style="font-weight:500"></span></div>
     <div class="si"><span style="color:var(--wm);font-size:.9rem">סה"כ מקומות</span><span id="s-total" style="font-weight:500"></span></div>
-    <div class="si"><span style="color:var(--wm);font-size:.9rem">מחובר ל-Supabase</span><span style="color:#6fcf97;font-size:.85rem">✓ פעיל</span></div>
     <div style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.6rem">
       <button class="btn-danger" onclick="confirmReset()">אפס את המקרר לחלוטין</button>
-      <button class="btn-danger" style="background:rgba(0,0,0,.2);border-color:var(--wb);color:var(--wm)" onclick="disconnectSupabase()">החלף חשבון Supabase</button>
+      <button class="btn-danger" style="background:rgba(0,0,0,.2);border-color:var(--wb);color:var(--wm)" onclick="doLogout()">התנתק</button>
     </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="admin-panel">
+  <div class="side-ov" onclick="closePanel('admin-panel')" style="position:fixed;inset:0;z-index:-1"></div>
+  <div class="admin-content">
+    <div class="side-hdr">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div class="side-title">פאנל אדמין</div>
+        <span class="admin-badge">👑 Admin</span>
+      </div>
+      <button class="icon-btn" onclick="closePanel('admin-panel')">✕</button>
+    </div>
+    <div id="admin-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem"></div>
+    <div style="font-size:.75rem;color:var(--wm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem;font-weight:500">משתמשים רשומים</div>
+    <div id="admin-users-list"></div>
   </div>
 </div>
 
@@ -397,161 +424,230 @@ textarea.finp{resize:vertical;min-height:70px}
 
 <script>
 // ═══════════════════════════════════════
-// SUPABASE CLIENT (lightweight fetch-based)
+// CONFIG — שנה כאן את הפרטים שלך
 // ═══════════════════════════════════════
-let SB_URL = '', SB_KEY = '';
+const SB_URL = 'https://jaixkgjtjoifxsdrxvth.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaXhrZ2p0am9pZnhzZHJ4dnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzg1NDEsImV4cCI6MjA5MDU1NDU0MX0.5tvonphacE33PfZZeBcWJwghZwogNumtcSXvAd9_B1o';
+const ADMIN_EMAIL = 'tzvikanetz@gmail.com'; // המייל שלך
 
-function sbFetch(path, method='GET', body=null, prefer=null){
+// ═══════════════════════════════════════
+// SUPABASE CLIENT
+// ═══════════════════════════════════════
+let authToken = null;
+
+function sbFetch(path, method='GET', body=null, prefer=null, useServiceKey=false){
+  const token = authToken || SB_KEY;
   const opts = {
     method,
     headers: {
       'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
+      'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
-      'Prefer': prefer || (method==='POST' ? 'return=representation' : '')
+      'Prefer': prefer || (method==='POST'?'return=representation':'')
     }
   };
   if(body) opts.body = JSON.stringify(body);
-  return fetch(SB_URL + '/rest/v1/' + path, opts).then(async r=>{
+  return fetch(SB_URL+'/rest/v1/'+path, opts).then(async r=>{
     const text = await r.text();
     if(!r.ok) throw new Error(text);
     return text ? JSON.parse(text) : null;
   });
 }
 
+function sbAuth(path, body){
+  return fetch(SB_URL+'/auth/v1/'+path, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  }).then(async r=>{
+    const data = await r.json();
+    if(!r.ok) throw data;
+    return data;
+  });
+}
+
 const db = {
-  async getConfig(){ return sbFetch('fridge_config?select=*&limit=1'); },
-  async upsertConfig(data){ return sbFetch('fridge_config?on_conflict=id', 'POST', data); },
-  async updateConfig(id, data){ return sbFetch(`fridge_config?id=eq.${id}`, 'PATCH', data); },
-  async getSlots(){ return sbFetch('wine_slots?select=*'); },
-  async upsertSlot(data){ return sbFetch('wine_slots?on_conflict=slot_key', 'POST', data, 'return=representation,resolution=merge-duplicates'); },
-  async deleteSlot(key){ return sbFetch(`wine_slots?slot_key=eq.${encodeURIComponent(key)}`, 'DELETE'); },
-  async getHistory(){ return sbFetch('wine_history?select=*&order=created_at.desc'); },
-  async addHistory(data){ return sbFetch('wine_history', 'POST', data); },
-  async deleteAllSlots(){ return sbFetch('wine_slots?id=neq.00000000-0000-0000-0000-000000000000', 'DELETE'); },
-  async deleteAllHistory(){ return sbFetch('wine_history?id=neq.00000000-0000-0000-0000-000000000000', 'DELETE'); },
-  async deleteConfig(id){ return sbFetch(`fridge_config?id=eq.${id}`, 'DELETE'); }
+  getConfig(uid){ return sbFetch(`fridge_config?select=*&user_id=eq.${uid}&limit=1`); },
+  upsertConfig(data){ return sbFetch('fridge_config?on_conflict=id','POST',data,'return=representation,resolution=merge-duplicates'); },
+  updateConfig(id,data){ return sbFetch(`fridge_config?id=eq.${id}`,'PATCH',data); },
+  getSlots(uid){ return sbFetch(`wine_slots?select=*&user_id=eq.${uid}`); },
+  upsertSlot(data){ return sbFetch('wine_slots?on_conflict=slot_key','POST',data,'return=representation,resolution=merge-duplicates'); },
+  deleteSlot(key){ return sbFetch(`wine_slots?slot_key=eq.${encodeURIComponent(key)}`,'DELETE'); },
+  getHistory(uid){ return sbFetch(`wine_history?select=*&user_id=eq.${uid}&order=created_at.desc`); },
+  addHistory(data){ return sbFetch('wine_history','POST',data); },
+  deleteAllSlots(uid){ return sbFetch(`wine_slots?user_id=eq.${uid}`,'DELETE'); },
+  deleteAllHistory(uid){ return sbFetch(`wine_history?user_id=eq.${uid}`,'DELETE'); },
+  deleteConfig(id){ return sbFetch(`fridge_config?id=eq.${id}`,'DELETE'); },
+  getProfiles(){ return sbFetch('profiles?select=*&order=created_at.desc'); }
 };
 
 // ═══════════════════════════════════════
 // APP STATE
 // ═══════════════════════════════════════
-let config = null, configId = null;
-let slots = {};      // key -> wine object
-let historyLog = []; // array of wine objects
-let currentRating = 0, currentFilter = 'all';
-let winePhotoData = null, fridgePhotoData = null;
-
-const TL = {red:'אדום',white:'לבן',rose:'רוזה'};
-const TE = {red:'🔴',white:'🟡',rose:'🌸'};
+let config=null, configId=null, currentUser=null;
+let slots={}, historyLog=[], currentRating=0, currentFilter='all';
+let winePhotoData=null, fridgePhotoData=null;
+const TL={red:'אדום',white:'לבן',rose:'רוזה'};
+const TE={red:'🔴',white:'🟡',rose:'🌸'};
 
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
 async function init(){
-  SB_URL = localStorage.getItem('sb_url') || '';
-  SB_KEY = localStorage.getItem('sb_key') || '';
+  // Check if returning from email confirmation
+  const hash = window.location.hash;
+  if(hash.includes('access_token')){
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if(token){
+      authToken = token;
+      localStorage.setItem('sb_auth_token', token);
+      window.location.hash = '';
+    }
+  }
 
-  if(!SB_URL || !SB_KEY){
-    hideLoading();
-    show('connect-screen');
-    return;
+  // Try saved token
+  const saved = localStorage.getItem('sb_auth_token');
+  if(saved && !authToken) authToken = saved;
+
+  if(authToken){
+    try {
+      const user = await getUser();
+      if(user){ currentUser=user; await loadFromDB(); return; }
+    } catch(e){ localStorage.removeItem('sb_auth_token'); authToken=null; }
   }
-  try {
-    await loadFromDB();
-  } catch(e) {
-    hideLoading();
-    showToast('שגיאה בחיבור למסד הנתונים', true);
-    show('connect-screen');
-  }
+
+  hideLoading();
+  setupPhotoButtons();
+  show('auth-screen');
+}
+
+async function getUser(){
+  const r = await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken}});
+  if(!r.ok) throw new Error('not authenticated');
+  return r.json();
 }
 
 async function loadFromDB(){
   showLoading();
-  const [cfgArr, slotArr, histArr] = await Promise.all([
-    db.getConfig(), db.getSlots(), db.getHistory()
-  ]);
+  try {
+    const [cfgArr, slotArr, histArr] = await Promise.all([
+      db.getConfig(currentUser.id), db.getSlots(currentUser.id), db.getHistory(currentUser.id)
+    ]);
 
-  if(!cfgArr || cfgArr.length === 0){
+    if(!cfgArr||cfgArr.length===0){
+      hideLoading();
+      setupPhotoButtons();
+      show('setup-screen');
+      return;
+    }
+
+    const cfg=cfgArr[0];
+    configId=cfg.id;
+    config={rows:cfg.rows,cols:cfg.cols};
+    fridgePhotoData=cfg.fridge_photo||null;
+    slots={};
+    (slotArr||[]).forEach(w=>{slots[w.slot_key]=dbRowToWine(w);});
+    historyLog=(histArr||[]).map(dbRowToWine);
+
     hideLoading();
     setupPhotoButtons();
-    show('setup-screen');
-    return;
+
+    // Show admin button if admin
+    if(currentUser.email===ADMIN_EMAIL){
+      document.getElementById('admin-btn').style.display='flex';
+    }
+    document.getElementById('s-email').textContent=currentUser.email;
+
+    renderBanner(); renderGrid(); renderStats();
+    show('main-screen');
+  } catch(e){
+    hideLoading();
+    showToast('שגיאה בטעינת הנתונים', true);
+    console.error(e);
   }
-
-  const cfg = cfgArr[0];
-  configId = cfg.id;
-  config = {rows: cfg.rows, cols: cfg.cols};
-  fridgePhotoData = cfg.fridge_photo || null;
-
-  slots = {};
-  (slotArr||[]).forEach(w => { slots[w.slot_key] = dbRowToWine(w); });
-
-  historyLog = (histArr||[]).map(dbRowToWine);
-
-  hideLoading();
-  setupPhotoButtons();
-  renderBanner();
-  renderGrid();
-  renderStats();
-  show('main-screen');
 }
 
 function dbRowToWine(row){
-  return {
-    name: row.name, type: row.type, grape: row.grape,
-    vintage: row.vintage, alcohol: row.alcohol, price: row.price,
-    date: row.date_added, dateRemoved: row.date_removed,
-    rating: row.rating, vivino: row.vivino, notes: row.notes,
-    photo: row.photo
-  };
+  return {name:row.name,type:row.type,grape:row.grape,vintage:row.vintage,alcohol:row.alcohol,price:row.price,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo};
 }
-
-function wineToDbRow(wine, key){
-  return {
-    slot_key: key, name: wine.name, type: wine.type, grape: wine.grape||null,
-    vintage: wine.vintage||null, alcohol: wine.alcohol||null, price: wine.price||null,
-    date_added: wine.date||null, rating: wine.rating||null,
-    vivino: wine.vivino||null, notes: wine.notes||null, photo: wine.photo||null
-  };
+function wineToDbRow(wine,key){
+  return {slot_key:key,user_id:currentUser.id,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null};
 }
-
 function histToDbRow(wine){
-  return {
-    name: wine.name, type: wine.type, grape: wine.grape||null,
-    vintage: wine.vintage||null, alcohol: wine.alcohol||null, price: wine.price||null,
-    date_added: wine.date||null, date_removed: wine.dateRemoved||null,
-    rating: wine.rating||null, vivino: wine.vivino||null,
-    notes: wine.notes||null
-  };
+  return {user_id:currentUser.id,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,date_removed:wine.dateRemoved||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null};
 }
 
 // ═══════════════════════════════════════
-// CONNECT
+// AUTH
 // ═══════════════════════════════════════
-async function connectSupabase(){
-  const url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
-  const key = document.getElementById('sb-key').value.trim();
-  if(!url || !key){ showToast('נא למלא URL ו-Key', true); return; }
+function switchTab(tab){
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('signup-form').style.display = tab==='signup'?'block':'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+}
 
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-password').value;
+  const msg=document.getElementById('login-msg');
+  msg.textContent='';
+  if(!email||!password){msg.textContent='נא למלא מייל וסיסמה';return;}
   showLoading();
-  SB_URL = url; SB_KEY = key;
   try {
-    await db.getConfig(); // test connection
-    localStorage.setItem('sb_url', url);
-    localStorage.setItem('sb_key', key);
+    const data = await sbAuth('token?grant_type=password',{email,password});
+    authToken = data.access_token;
+    localStorage.setItem('sb_auth_token', authToken);
+    currentUser = data.user;
     await loadFromDB();
-  } catch(e) {
+  } catch(e){
     hideLoading();
-    showToast('לא ניתן להתחבר — בדוק את הפרטים', true);
-    SB_URL=''; SB_KEY='';
+    msg.textContent = e.error_description||e.msg||'שגיאה בהתחברות — בדוק מייל וסיסמה';
   }
 }
 
-function disconnectSupabase(){
-  localStorage.removeItem('sb_url');
-  localStorage.removeItem('sb_key');
-  SB_URL=''; SB_KEY='';
+async function doSignup(){
+  const email=document.getElementById('signup-email').value.trim();
+  const password=document.getElementById('signup-password').value;
+  const password2=document.getElementById('signup-password2').value;
+  const msg=document.getElementById('signup-msg');
+  msg.textContent='';
+  if(!email||!password){msg.textContent='נא למלא כל השדות';return;}
+  if(password.length<6){msg.textContent='הסיסמה חייבת להיות לפחות 6 תווים';return;}
+  if(password!==password2){msg.textContent='הסיסמאות אינן תואמות';return;}
+  showLoading();
+  try {
+    await sbAuth('signup',{email,password,options:{emailRedirectTo:'https://tzvikanetz.github.io/wine-fridge'}});
+    hideLoading();
+    document.getElementById('signup-form').style.display='none';
+    document.getElementById('confirm-sent').style.display='block';
+    document.querySelectorAll('.auth-tabs').forEach(t=>t.style.display='none');
+  } catch(e){
+    hideLoading();
+    msg.textContent = e.error_description||e.msg||'שגיאה בהרשמה';
+  }
+}
+
+async function doForgot(){
+  const email=document.getElementById('login-email').value.trim();
+  if(!email){document.getElementById('login-msg').textContent='הכנס מייל קודם';return;}
+  showLoading();
+  try {
+    await sbAuth('recover',{email,options:{redirectTo:'https://tzvikanetz.github.io/wine-fridge'}});
+    hideLoading();
+    document.getElementById('login-msg').className='auth-msg success';
+    document.getElementById('login-msg').textContent='נשלח מייל לאיפוס סיסמה';
+  } catch(e){
+    hideLoading();
+    document.getElementById('login-msg').textContent='שגיאה בשליחת המייל';
+  }
+}
+
+async function doLogout(){
+  try { await fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken}}); } catch(e){}
+  localStorage.removeItem('sb_auth_token');
+  authToken=null; currentUser=null;
   location.reload();
 }
 
@@ -559,59 +655,38 @@ function disconnectSupabase(){
 // PHOTO BUTTONS
 // ═══════════════════════════════════════
 function setupPhotoButtons(){
-  const spi = document.getElementById('setup-photo-input');
-  document.getElementById('setup-photo-btn').onclick = ()=>spi.click();
-  document.getElementById('setup-pch-btn').onclick = ()=>spi.click();
-  spi.onchange = ()=>readFile(spi, data=>{
-    fridgePhotoData = data;
-    document.getElementById('setup-ppimg').src = data;
-    document.getElementById('setup-ppwrap').style.display = 'block';
-  });
+  const spi=document.getElementById('setup-photo-input');
+  document.getElementById('setup-photo-btn').onclick=()=>spi.click();
+  document.getElementById('setup-pch-btn').onclick=()=>spi.click();
+  spi.onchange=()=>readFile(spi,data=>{fridgePhotoData=data;document.getElementById('setup-ppimg').src=data;document.getElementById('setup-ppwrap').style.display='block';});
 
-  const bpi = document.getElementById('banner-photo-input');
-  document.getElementById('banner-change-btn').onclick = ()=>bpi.click();
-  bpi.onchange = ()=>readFile(bpi, async data=>{
-    fridgePhotoData = data;
-    if(configId) await db.updateConfig(configId, {fridge_photo: data});
-    renderBanner();
-    showToast('תמונת המקרר עודכנה');
-  });
+  const bpi=document.getElementById('banner-photo-input');
+  document.getElementById('banner-change-btn').onclick=()=>bpi.click();
+  bpi.onchange=()=>readFile(bpi,async data=>{fridgePhotoData=data;if(configId)await db.updateConfig(configId,{fridge_photo:data});renderBanner();showToast('תמונת המקרר עודכנה');});
 
-  const stpi = document.getElementById('settings-photo-input');
-  document.getElementById('settings-photo-btn').onclick = ()=>stpi.click();
-  stpi.onchange = ()=>readFile(stpi, async data=>{
-    fridgePhotoData = data;
-    if(configId) await db.updateConfig(configId, {fridge_photo: data});
-    renderBanner(); closePanel('settings-panel');
-    showToast('תמונת המקרר עודכנה');
-  });
+  const stpi=document.getElementById('settings-photo-input');
+  document.getElementById('settings-photo-btn').onclick=()=>stpi.click();
+  stpi.onchange=()=>readFile(stpi,async data=>{fridgePhotoData=data;if(configId)await db.updateConfig(configId,{fridge_photo:data});renderBanner();closePanel('settings-panel');showToast('תמונת המקרר עודכנה');});
 
-  const wpi = document.getElementById('wine-photo-input');
-  const wci = document.getElementById('wine-camera-input');
-
+  const wpi=document.getElementById('wine-photo-input');
+  const wci=document.getElementById('wine-camera-input');
   function handleWineFile(input){
-    if(!input.files[0]) return;
-    if(input.files[0].size > 2*1024*1024){ showToast('תמונה גדולה מדי (מקסימום 2MB)', true); return; }
-    readFile(input, data=>{
-      winePhotoData = data;
-      document.getElementById('wine-ppimg').src = data;
-      document.getElementById('wine-ppwrap').style.display = 'block';
-    });
+    if(!input.files[0])return;
+    if(input.files[0].size>2*1024*1024){showToast('תמונה גדולה מדי (מקסימום 2MB)',true);return;}
+    readFile(input,data=>{winePhotoData=data;document.getElementById('wine-ppimg').src=data;document.getElementById('wine-ppwrap').style.display='block';});
   }
-
-  document.getElementById('wine-photo-btn').onclick = ()=>wpi.click();
-  document.getElementById('wine-camera-btn').onclick = ()=>wci.click();
-  document.getElementById('wine-pch-btn').onclick = ()=>wpi.click();
-  document.getElementById('wine-pch-cam-btn').onclick = ()=>wci.click();
-  wpi.onchange = ()=>handleWineFile(wpi);
-  wci.onchange = ()=>handleWineFile(wci);
+  document.getElementById('wine-photo-btn').onclick=()=>wpi.click();
+  document.getElementById('wine-camera-btn').onclick=()=>wci.click();
+  document.getElementById('wine-pch-btn').onclick=()=>wpi.click();
+  document.getElementById('wine-pch-cam-btn').onclick=()=>wci.click();
+  wpi.onchange=()=>handleWineFile(wpi);
+  wci.onchange=()=>handleWineFile(wci);
 }
 
-function readFile(input, cb){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>cb(e.target.result);
+function readFile(input,cb){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>cb(e.target.result);
   reader.readAsDataURL(file);
 }
 
@@ -619,37 +694,31 @@ function readFile(input, cb){
 // SETUP
 // ═══════════════════════════════════════
 async function setupFridge(){
-  const rows = parseInt(document.getElementById('setup-rows').value);
-  const cols = parseInt(document.getElementById('setup-cols').value);
-  if(!rows||!cols||rows<1||cols<1){ showToast('נא להזין ערכים תקינים', true); return; }
+  const rows=parseInt(document.getElementById('setup-rows').value);
+  const cols=parseInt(document.getElementById('setup-cols').value);
+  if(!rows||!cols||rows<1||cols<1){showToast('נא להזין ערכים תקינים',true);return;}
   showLoading();
   try {
-    const result = await db.upsertConfig({rows, cols, fridge_photo: fridgePhotoData||null});
-    configId = result[0].id;
-    config = {rows, cols};
-    hideLoading();
-    renderBanner(); renderGrid(); renderStats();
-    show('main-screen');
-  } catch(e){
-    hideLoading();
-    showToast('שגיאה בשמירת ההגדרות', true);
-  }
+    const result=await db.upsertConfig({rows,cols,fridge_photo:fridgePhotoData||null,user_id:currentUser.id});
+    configId=result[0].id; config={rows,cols};
+    hideLoading(); renderBanner(); renderGrid(); renderStats(); show('main-screen');
+  } catch(e){hideLoading();showToast('שגיאה בשמירת ההגדרות',true);}
 }
 
 // ═══════════════════════════════════════
 // GRID
 // ═══════════════════════════════════════
 function renderBanner(){
-  const banner = document.getElementById('fridge-banner');
-  if(fridgePhotoData){ document.getElementById('fridge-banner-img').src = fridgePhotoData; banner.style.display='block'; }
-  else{ banner.style.display='none'; }
+  const banner=document.getElementById('fridge-banner');
+  if(fridgePhotoData){document.getElementById('fridge-banner-img').src=fridgePhotoData;banner.style.display='block';}
+  else banner.style.display='none';
 }
 
 function renderGrid(){
-  const grid = document.getElementById('fridge-grid');
-  const colLbls = document.getElementById('col-labels');
-  grid.innerHTML=''; colLbls.innerHTML='';
-  const spacer = document.createElement('div'); spacer.style.minWidth='22px'; colLbls.appendChild(spacer);
+  const grid=document.getElementById('fridge-grid');
+  const colLbls=document.getElementById('col-labels');
+  grid.innerHTML='';colLbls.innerHTML='';
+  const spacer=document.createElement('div');spacer.style.minWidth='22px';colLbls.appendChild(spacer);
   for(let c=0;c<config.cols;c++){const l=document.createElement('div');l.className='col-label';l.textContent=c+1;colLbls.appendChild(l);}
   const sv=(document.getElementById('search-field')?.value||'').toLowerCase();
   for(let ri=config.rows-1;ri>=0;ri--){
@@ -688,23 +757,17 @@ function renderGrid(){
 function renderStats(){
   const bar=document.getElementById('stats-bar');
   let red=0,white=0,rose=0,total=0,totalPrice=0,vivinoSum=0,vivinoCount=0;
-  for(const k in slots){
-    total++;
-    const w=slots[k];
-    if(w.type==='red')red++;else if(w.type==='white')white++;else rose++;
-    if(w.price) totalPrice+=parseFloat(w.price);
-    if(w.vivino) {vivinoSum+=parseFloat(w.vivino);vivinoCount++;}
-  }
+  for(const k in slots){total++;const w=slots[k];if(w.type==='red')red++;else if(w.type==='white')white++;else rose++;if(w.price)totalPrice+=parseFloat(w.price);if(w.vivino){vivinoSum+=parseFloat(w.vivino);vivinoCount++;}}
   const cap=config.rows*config.cols;
-  const vivinoAvg = vivinoCount>0 ? (vivinoSum/vivinoCount).toFixed(1) : null;
-  const priceStr = totalPrice>0 ? '₪'+Math.round(totalPrice).toLocaleString() : null;
+  const vivinoAvg=vivinoCount>0?(vivinoSum/vivinoCount).toFixed(1):null;
+  const priceStr=totalPrice>0?'₪'+Math.round(totalPrice).toLocaleString():null;
   bar.innerHTML=`
     <div class="stat-item"><div class="sdot red"></div><span class="scnt">${red}</span><span class="slb"> אדום</span></div>
     <div class="stat-item"><div class="sdot white"></div><span class="scnt">${white}</span><span class="slb"> לבן</span></div>
     <div class="stat-item"><div class="sdot rose"></div><span class="scnt">${rose}</span><span class="slb"> רוזה</span></div>
     <div class="stat-item"><div class="sdot empty"></div><span class="scnt">${total}/${cap}</span><span class="slb"> מקומות</span></div>
-    ${vivinoAvg?`<div class="stat-item"><span style="font-size:.8rem">⭐</span><span class="scnt">${vivinoAvg}</span><span class="slb"> Vivino ממוצע</span></div>`:''}
-    ${priceStr?`<div class="stat-item"><span style="font-size:.8rem">💰</span><span class="scnt">${priceStr}</span><span class="slb"> שווי מקרר</span></div>`:''}
+    ${vivinoAvg?`<div class="stat-item"><span style="font-size:.8rem">⭐</span><span class="scnt">${vivinoAvg}</span><span class="slb"> Vivino</span></div>`:''}
+    ${priceStr?`<div class="stat-item"><span style="font-size:.8rem">💰</span><span class="scnt">${priceStr}</span><span class="slb"> שווי</span></div>`:''}
   `;
 }
 
@@ -733,6 +796,7 @@ function openAdd(ri,ci,key,editData=null){
   const ww=document.getElementById('wine-ppwrap');const wi=document.getElementById('wine-ppimg');
   if(winePhotoData){wi.src=winePhotoData;ww.style.display='block';}else{wi.src='';ww.style.display='none';}
   document.getElementById('wine-photo-input').value='';
+  document.getElementById('wine-camera-input').value='';
   document.getElementById('add-modal').classList.add('active');
 }
 
@@ -759,37 +823,20 @@ async function saveWine(){
   const key=document.getElementById('edit-key').value;
   const dopt=document.getElementById('date-option').value;
   const dval=dopt==='custom'?document.getElementById('field-date').value:new Date().toISOString().split('T')[0];
-  const wine={
-    name, type:typeEl.value,
-    grape:document.getElementById('field-grape').value||null,
-    vintage:document.getElementById('field-vintage').value||null,
-    alcohol:document.getElementById('field-alcohol').value||null,
-    price:document.getElementById('field-price').value||null,
-    date:dval, rating:currentRating||null,
-    vivino:document.getElementById('field-vivino').value||null,
-    notes:document.getElementById('field-notes').value.trim()||null,
-    photo:winePhotoData||null
-  };
+  const wine={name,type:typeEl.value,grape:document.getElementById('field-grape').value||null,vintage:document.getElementById('field-vintage').value||null,alcohol:document.getElementById('field-alcohol').value||null,price:document.getElementById('field-price').value||null,date:dval,rating:currentRating||null,vivino:document.getElementById('field-vivino').value||null,notes:document.getElementById('field-notes').value.trim()||null,photo:winePhotoData||null};
   showLoading();
   try {
-    await db.upsertSlot(wineToDbRow(wine, key));
+    await db.upsertSlot(wineToDbRow(wine,key));
     slots[key]=wine;
-    hideLoading();
-    closeModal('add-modal');closeModal('detail-modal');
-    renderGrid();renderStats();
-    showToast('היין נשמר בהצלחה');
-  } catch(e){
-    hideLoading();
-    showToast('שגיאה בשמירה: '+e.message, true);
-  }
+    hideLoading();closeModal('add-modal');closeModal('detail-modal');renderGrid();renderStats();showToast('היין נשמר בהצלחה');
+  } catch(e){hideLoading();showToast('שגיאה בשמירה: '+e.message,true);}
 }
 
 // ═══════════════════════════════════════
 // DETAIL
 // ═══════════════════════════════════════
 function openDetail(key){
-  const wine=slots[key];if(!wine)return;
-  buildDetail('detail-content',wine,key,false);
+  buildDetail('detail-content',slots[key],key,false);
   document.getElementById('detail-modal').classList.add('active');
 }
 
@@ -798,8 +845,7 @@ function buildDetail(cid,wine,key,isHist){
   const parts=key?key.split('-'):[null,null];
   const r=parts[0],c=parts[1];
   const el=document.getElementById(cid);
-  const priceStr = wine.price ? '₪'+parseFloat(wine.price).toLocaleString() : null;
-  const alcoholStr = wine.alcohol ? wine.alcohol+'%' : null;
+  const priceStr=wine.price?'₪'+parseFloat(wine.price).toLocaleString():null;
   el.innerHTML=`
     <div class="mhandle"></div>
     ${wine.photo?`<img style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:1rem" src="${wine.photo}">`:''}
@@ -815,7 +861,7 @@ function buildDetail(cid,wine,key,isHist){
       ${isHist&&wine.dateRemoved?`<div class="dtmi"><div class="dtml">הוצא</div><div class="dtmv">${wine.dateRemoved}</div></div>`:''}
       ${wine.rating?`<div class="dtmi"><div class="dtml">דירוג</div><div class="dtmv" style="color:var(--wg)">${sh}</div></div>`:''}
       ${wine.vivino?`<div class="dtmi"><div class="dtml">Vivino</div><div class="dtmv">⭐ ${wine.vivino}</div></div>`:''}
-      ${alcoholStr?`<div class="dtmi"><div class="dtml">אלכוהול</div><div class="dtmv">${alcoholStr}</div></div>`:''}
+      ${wine.alcohol?`<div class="dtmi"><div class="dtml">אלכוהול</div><div class="dtmv">${wine.alcohol}%</div></div>`:''}
       ${priceStr?`<div class="dtmi"><div class="dtml">מחיר</div><div class="dtmv">${priceStr}</div></div>`:''}
     </div>
     ${wine.notes?`<div style="background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">הערות</div><div style="font-size:.9rem;color:var(--wt);line-height:1.6;white-space:pre-wrap">${wine.notes}</div></div>`:''}
@@ -833,21 +879,14 @@ function startEdit(key){
 
 async function confirmRemove(key){
   const wine=slots[key];
-  showConfirm('הוצאת בקבוק',`האם להוציא את "${wine.name}" מהמקרר?`, async()=>{
+  showConfirm('הוצאת בקבוק',`האם להוציא את "${wine.name}" מהמקרר?`,async()=>{
     showLoading();
     try {
-      const removed={...wine, dateRemoved:new Date().toISOString().split('T')[0]};
-      await Promise.all([db.deleteSlot(key), db.addHistory(histToDbRow(removed))]);
-      historyLog.unshift(removed);
-      delete slots[key];
-      hideLoading();
-      closeModal('detail-modal');
-      renderGrid();renderStats();
-      showToast('הבקבוק הועבר להיסטוריה');
-    } catch(e){
-      hideLoading();
-      showToast('שגיאה: '+e.message, true);
-    }
+      const removed={...wine,dateRemoved:new Date().toISOString().split('T')[0]};
+      await Promise.all([db.deleteSlot(key),db.addHistory(histToDbRow(removed))]);
+      historyLog.unshift(removed);delete slots[key];
+      hideLoading();closeModal('detail-modal');renderGrid();renderStats();showToast('הבקבוק הועבר להיסטוריה');
+    } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
 }
 
@@ -856,20 +895,16 @@ async function confirmRemove(key){
 // ═══════════════════════════════════════
 function openHistory(){
   const list=document.getElementById('history-list');
-  if(!historyLog.length){
-    list.innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:2rem">אין עדיין בקבוקים בהיסטוריה</div>';
-  } else {
+  if(!historyLog.length){list.innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:2rem">אין עדיין בקבוקים בהיסטוריה</div>';}
+  else{
     list.innerHTML=historyLog.map((w,i)=>`
       <div class="hist-item" onclick="openHistDetail(${i})">
-        <div class="hi-name">${TE[w.type]} ${w.name}${w.grape?' · <span style="color:var(--wm);font-size:.8rem">'+w.grape+'</span>':''}</div>
-        <div class="hi-meta">
-          ${w.vintage?w.vintage+' · ':''}הוכנס: ${w.date||'—'}${w.dateRemoved?' · הוצא: '+w.dateRemoved:''}
-          ${w.price?' · ₪'+parseFloat(w.price).toLocaleString():''}
-        </div>
+        <div class="hi-name">${TE[w.type]} ${w.name}${w.grape?` · <span style="color:var(--wm);font-size:.8rem">${w.grape}</span>`:''}</div>
+        <div class="hi-meta">${w.vintage?w.vintage+' · ':''}הוכנס: ${w.date||'—'}${w.dateRemoved?' · הוצא: '+w.dateRemoved:''}${w.price?' · ₪'+parseFloat(w.price).toLocaleString():''}</div>
         <div style="display:flex;gap:.8rem;margin-top:.3rem;flex-wrap:wrap">
           ${w.rating?`<span style="color:var(--wg);font-size:.8rem">${'★'.repeat(w.rating)}</span>`:''}
           ${w.vivino?`<span style="font-size:.78rem;color:var(--wm)">Vivino ${w.vivino}</span>`:''}
-          ${w.alcohol?`<span style="font-size:.78rem;color:var(--wm)">${w.alcohol}% אלכוהול</span>`:''}
+          ${w.alcohol?`<span style="font-size:.78rem;color:var(--wm)">${w.alcohol}% אלכ'</span>`:''}
         </div>
       </div>`).join('');
   }
@@ -878,14 +913,33 @@ function openHistory(){
 
 function openHistDetail(idx){
   closePanel('history-panel');
-  setTimeout(()=>{
-    buildDetail('hist-detail-content', historyLog[idx], null, true);
-    document.getElementById('hist-detail-modal').classList.add('active');
-  }, 320);
+  setTimeout(()=>{buildDetail('hist-detail-content',historyLog[idx],null,true);document.getElementById('hist-detail-modal').classList.add('active');},320);
 }
 
 // ═══════════════════════════════════════
-// SEARCH / FILTER
+// ADMIN
+// ═══════════════════════════════════════
+async function openAdmin(){
+  document.getElementById('admin-panel').classList.add('open');
+  document.getElementById('admin-users-list').innerHTML='<div style="color:var(--wm);font-size:.85rem">טוען...</div>';
+  try {
+    const profiles = await db.getProfiles();
+    const statsEl = document.getElementById('admin-stats');
+    statsEl.innerHTML=`
+      <div style="background:var(--wc);border-radius:8px;padding:.8rem;text-align:center"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.2rem">משתמשים</div><div style="font-size:1.4rem;font-weight:600;color:var(--wg)">${profiles.length}</div></div>
+    `;
+    document.getElementById('admin-users-list').innerHTML = profiles.map(p=>`
+      <div class="user-row">
+        <div class="user-email">${p.email||'—'} ${p.email===ADMIN_EMAIL?'<span style="color:var(--wg);font-size:.7rem">👑 אתה</span>':''}</div>
+        <div class="user-meta">נרשם: ${new Date(p.created_at).toLocaleDateString('he-IL')}</div>
+      </div>`).join('');
+  } catch(e){
+    document.getElementById('admin-users-list').innerHTML='<div style="color:#f4a0ad;font-size:.85rem">שגיאה בטעינת המשתמשים</div>';
+  }
+}
+
+// ═══════════════════════════════════════
+// SEARCH / FILTER / SETTINGS
 // ═══════════════════════════════════════
 function toggleSearch(){
   const p=document.getElementById('search-panel');
@@ -895,9 +949,6 @@ function toggleSearch(){
 }
 function setFilter(f,el){currentFilter=f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===el));renderGrid();}
 
-// ═══════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════
 function openSettings(){
   document.getElementById('s-rows').textContent=config.rows;
   document.getElementById('s-cols').textContent=config.cols;
@@ -906,16 +957,12 @@ function openSettings(){
 }
 
 async function confirmReset(){
-  showConfirm('אפס מקרר','פעולה זו תמחק את כל הנתונים מהשרת לצמיתות.', async()=>{
+  showConfirm('אפס מקרר','פעולה זו תמחק את כל הנתונים לצמיתות.',async()=>{
     showLoading();
     try {
-      await Promise.all([db.deleteAllSlots(), db.deleteAllHistory(), db.deleteConfig(configId)]);
-      hideLoading();
-      location.reload();
-    } catch(e){
-      hideLoading();
-      showToast('שגיאה: '+e.message, true);
-    }
+      await Promise.all([db.deleteAllSlots(currentUser.id),db.deleteAllHistory(currentUser.id),db.deleteConfig(configId)]);
+      hideLoading();location.reload();
+    } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
 }
 
@@ -929,25 +976,18 @@ function showLoading(){document.getElementById('loading-screen').classList.remov
 function hideLoading(){document.getElementById('loading-screen').classList.add('hidden');}
 
 let toastTimer;
-function showToast(msg, isError=false){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.className='toast'+(isError?' error':'');
+function showToast(msg,isError=false){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(isError?' error':'');
   requestAnimationFrame(()=>t.classList.add('show'));
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'), 3000);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
-
 function showConfirm(title,text,onOk){
-  document.getElementById('confirm-title').textContent=title;
-  document.getElementById('confirm-text').textContent=text;
+  document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-text').textContent=text;
   document.getElementById('confirm-ok').onclick=()=>{onOk();document.getElementById('confirm-overlay').classList.remove('active');};
   document.getElementById('confirm-overlay').classList.add('active');
 }
 
-document.querySelectorAll('.modal-overlay').forEach(ov=>{
-  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('active');});
-});
+document.querySelectorAll('.modal-overlay').forEach(ov=>{ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('active');});});
 
 init();
 </script>
