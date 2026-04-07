@@ -490,8 +490,12 @@ textarea.finp{resize:vertical;min-height:70px}
     <label class="flbl">כמה תאים בכל קומה?</label>
     <input type="number" class="finp" id="new-fridge-cols" value="4" min="1" max="20">
     <label class="flbl">תמונת המקרר (אופציונלי)</label>
-    <button type="button" class="pbtn" id="new-fridge-photo-btn">📷 העלה תמונה / צלם</button>
+    <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+      <button type="button" class="pbtn" id="new-fridge-photo-btn" style="margin-bottom:0;flex:1">🖼️ גלריה</button>
+      <button type="button" class="pbtn" id="new-fridge-camera-btn" style="margin-bottom:0;flex:1">📷 מצלמה</button>
+    </div>
     <input type="file" id="new-fridge-photo-input" accept="image/*" style="display:none">
+    <input type="file" id="new-fridge-camera-input" accept="image/*" capture="environment" style="display:none">
     <div class="ppwrap" id="new-fridge-ppwrap">
       <img id="new-fridge-ppimg" class="ppimg">
     </div>
@@ -1187,20 +1191,81 @@ function openHistDetail(idx){
 // ═══════════════════════════════════════
 async function openAdmin(){
   document.getElementById('admin-panel').classList.add('open');
-  document.getElementById('admin-users-list').innerHTML='<div style="color:var(--wm);font-size:.85rem">טוען...</div>';
+  document.getElementById('admin-users-list').innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:1rem">טוען...</div>';
   try {
     const profiles = await db.getProfiles();
-    const statsEl = document.getElementById('admin-stats');
-    statsEl.innerHTML=`
-      <div style="background:var(--wc);border-radius:8px;padding:.8rem;text-align:center"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.2rem">משתמשים</div><div style="font-size:1.4rem;font-weight:600;color:var(--wg)">${profiles.length}</div></div>
+    document.getElementById('admin-stats').innerHTML=`
+      <div style="background:var(--wc);border-radius:8px;padding:.8rem;text-align:center">
+        <div style="font-size:.7rem;color:var(--wm);margin-bottom:.2rem">סה"כ משתמשים</div>
+        <div style="font-size:1.6rem;font-weight:600;color:var(--wg)">${profiles.length}</div>
+      </div>
     `;
     document.getElementById('admin-users-list').innerHTML = profiles.map(p=>`
-      <div class="user-row">
-        <div class="user-email">${p.email||'—'} ${p.email===ADMIN_EMAIL?'<span style="color:var(--wg);font-size:.7rem">👑 אתה</span>':''}</div>
-        <div class="user-meta">נרשם: ${new Date(p.created_at).toLocaleDateString('he-IL')}</div>
+      <div class="user-row" onclick="openUserDetail('${p.id}','${(p.email||'').replace(/'/g,"\\'")}')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="user-email">${p.email||'—'} ${p.email===ADMIN_EMAIL?'<span style="color:var(--wg);font-size:.7rem">👑</span>':''}</div>
+            <div class="user-meta">נרשם: ${new Date(p.created_at).toLocaleDateString('he-IL')}</div>
+          </div>
+          <span style="color:var(--wm);font-size:.8rem">←</span>
+        </div>
       </div>`).join('');
   } catch(e){
     document.getElementById('admin-users-list').innerHTML='<div style="color:#f4a0ad;font-size:.85rem">שגיאה בטעינת המשתמשים</div>';
+  }
+}
+
+async function openUserDetail(userId, email){
+  // Show loading inside admin panel
+  document.getElementById('admin-stats').innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:.5rem">טוען נתוני משתמש...</div>';
+  document.getElementById('admin-users-list').innerHTML='';
+
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/rpc/get_user_stats',{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},
+      body:JSON.stringify({target_user_id:userId})
+    });
+    const stats = await r.json();
+    const isMe = email===ADMIN_EMAIL;
+    const totalSlots = (stats.fridges||[]).reduce((s,f)=>s+f.rows*f.cols,0);
+
+    document.getElementById('admin-stats').innerHTML=`
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+        <button onclick="openAdmin()" style="background:none;border:1px solid var(--wb);color:var(--wm);padding:.3rem .7rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.8rem">← חזרה</button>
+        <div style="font-weight:500;font-size:.9rem;color:var(--wg)">${email} ${isMe?'👑':''}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem">
+        <div style="background:var(--wc);border-radius:8px;padding:.7rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm);margin-bottom:.2rem">בקבוקים במקרר</div>
+          <div style="font-size:1.4rem;font-weight:600;color:var(--wt)">${stats.total_bottles||0}</div>
+          <div style="font-size:.65rem;color:var(--wm)">מתוך ${totalSlots} מקומות</div>
+        </div>
+        <div style="background:var(--wc);border-radius:8px;padding:.7rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm);margin-bottom:.2rem">שווי אוסף</div>
+          <div style="font-size:1.4rem;font-weight:600;color:var(--wg)">${stats.total_value>0?'₪'+Math.round(stats.total_value).toLocaleString():'—'}</div>
+        </div>
+        <div style="background:var(--wc);border-radius:8px;padding:.7rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm);margin-bottom:.2rem">התפלגות</div>
+          <div style="font-size:.85rem;font-weight:500;color:var(--wt)">🔴${stats.red||0} 🟡${stats.white||0} 🌸${stats.rose||0}</div>
+        </div>
+        <div style="background:var(--wc);border-radius:8px;padding:.7rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm);margin-bottom:.2rem">יצאו מהמקרר</div>
+          <div style="font-size:1.4rem;font-weight:600;color:var(--wt)">${stats.history_count||0}</div>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--wm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;font-weight:500">מקררים (${stats.fridge_count||0})</div>
+      ${(stats.fridges||[]).map(f=>`
+        <div style="background:var(--wc);border:1px solid var(--wb);border-radius:8px;padding:.6rem .8rem;margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.88rem;font-weight:500">${f.name||'מקרר ללא שם'}</span>
+          <span style="font-size:.75rem;color:var(--wm)">${f.rows}×${f.cols} = ${f.rows*f.cols} מקומות</span>
+        </div>`).join('')}
+    `;
+  } catch(e){
+    document.getElementById('admin-stats').innerHTML=`
+      <button onclick="openAdmin()" style="background:none;border:1px solid var(--wb);color:var(--wm);padding:.3rem .7rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.8rem;margin-bottom:.8rem">← חזרה</button>
+      <div style="color:#f4a0ad;font-size:.85rem">שגיאה בטעינת הנתונים</div>
+    `;
   }
 }
 
@@ -1238,13 +1303,20 @@ function openAddFridge(){
   document.getElementById('new-fridge-cols').value=4;
   document.getElementById('new-fridge-ppwrap').style.display='none';
   document.getElementById('new-fridge-photo-input').value='';
+  document.getElementById('new-fridge-camera-input').value='';
   const nfpi=document.getElementById('new-fridge-photo-input');
+  const nfci=document.getElementById('new-fridge-camera-input');
+  function handleNewFridgePhoto(input){
+    readFile(input,data=>{
+      document.getElementById('new-fridge-ppimg').src=data;
+      document.getElementById('new-fridge-ppwrap').style.display='block';
+      nfpi._photoData=data;
+    });
+  }
   document.getElementById('new-fridge-photo-btn').onclick=()=>nfpi.click();
-  nfpi.onchange=()=>readFile(nfpi,data=>{
-    document.getElementById('new-fridge-ppimg').src=data;
-    document.getElementById('new-fridge-ppwrap').style.display='block';
-    nfpi._photoData=data;
-  });
+  document.getElementById('new-fridge-camera-btn').onclick=()=>nfci.click();
+  nfpi.onchange=()=>handleNewFridgePhoto(nfpi);
+  nfci.onchange=()=>handleNewFridgePhoto(nfci);
   document.getElementById('add-fridge-modal').classList.add('active');
 }
 
