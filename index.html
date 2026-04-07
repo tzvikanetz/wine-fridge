@@ -482,9 +482,16 @@ textarea.finp{resize:vertical;min-height:70px}
 <div class="modal-overlay" id="add-fridge-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle">מקרר חדש</div>
-    <label class="flbl">שם המקרר</label>
-    <input type="text" class="finp" id="new-fridge-name" placeholder="לדוגמה: מקרר יין לבן">
+    <div class="mtitle">מקרר / אוסף חדש</div>
+    <label class="flbl">סוג האוסף</label>
+    <select class="finp" id="new-fridge-type">
+      <option value="wine">🍷 יינות</option>
+      <option value="whisky">🥃 ויסקי / אלכוהול</option>
+      <option value="beer">🍺 בירה</option>
+      <option value="general">📦 כללי</option>
+    </select>
+    <label class="flbl">שם המקרר / האוסף</label>
+    <input type="text" class="finp" id="new-fridge-name" placeholder="לדוגמה: מקרר ויסקי">
     <label class="flbl">כמה קומות?</label>
     <input type="number" class="finp" id="new-fridge-rows" value="6" min="1" max="30">
     <label class="flbl">כמה תאים בכל קומה?</label>
@@ -716,10 +723,11 @@ async function syncFromDB(silent){
     }
 
     allFridges = cfgArr;
-    // Keep current fridge or default to first
-    const currentFridge = cfgArr.find(f=>f.id===configId) || cfgArr[0];
+    // Load default fridge, or keep current, or first
+    const defaultFridge = cfgArr.find(f=>f.is_default);
+    const currentFridge = cfgArr.find(f=>f.id===configId) || defaultFridge || cfgArr[0];
     configId = currentFridge.id;
-    config = {rows:currentFridge.rows, cols:currentFridge.cols, name:currentFridge.name};
+    config = {rows:currentFridge.rows, cols:currentFridge.cols, name:currentFridge.name, collection_type:currentFridge.collection_type||'wine'};
     fridgePhotoData = currentFridge.fridge_photo||null;
 
     const slotArr = await db.getSlots(currentUser.id, configId);
@@ -751,7 +759,7 @@ async function switchFridge(fridgeId){
   const fridge = allFridges.find(f=>f.id===fridgeId);
   if(!fridge){hideLoading();return;}
   configId = fridge.id;
-  config = {rows:fridge.rows, cols:fridge.cols, name:fridge.name};
+  config = {rows:fridge.rows, cols:fridge.cols, name:fridge.name, collection_type:fridge.collection_type||'wine'};
   fridgePhotoData = fridge.fridge_photo||null;
   const slotArr = await db.getSlots(currentUser.id, configId);
   slots={};
@@ -949,7 +957,19 @@ function renderBanner(){
   else banner.style.display='none';
 }
 
+// Collection type config
+const COLLECTION_TYPES = {
+  wine:    {label:'יינות',      icon:'🍷', slotLabel:'תא',   rowLabel:'קומה', emptyIcon:'+', colors:{red:['#4a0d1a','#2d0810','#6b1a28'], white:['#3d2e05','#251d03','#6b5210'], rose:['#4a1030','#2d081c','#6b1a44']}},
+  whisky:  {label:'ויסקי',     icon:'🥃', slotLabel:'מדף',  rowLabel:'שורה', emptyIcon:'+', colors:{red:['#2d1a05','#1a0f02','#5a3a10'], white:['#3a2a10','#221808','#6b5020'], rose:['#2d1505','#1a0d02','#5a3010']}},
+  beer:    {label:'בירה',      icon:'🍺', slotLabel:'מקום', rowLabel:'שורה', emptyIcon:'+', colors:{red:['#1a2d05','#0f1a02','#3a5a10'], white:['#2d2a05','#1a1802','#5a5020'], rose:['#2a1a05','#180f02','#5a3010']}},
+  general: {label:'כללי',      icon:'📦', slotLabel:'מקום', rowLabel:'שורה', emptyIcon:'+', colors:{red:['#1a1a2d','#0f0f1a','#3a3a5a'], white:['#1a2a2d','#0f181a','#3a505a'], rose:['#2a1a2d','#180f1a','#503a5a']}}
+};
+
+function getCollectionType(){ return config?.collection_type || 'wine'; }
+function getCT(){ return COLLECTION_TYPES[getCollectionType()] || COLLECTION_TYPES.wine; }
+
 function renderGrid(){
+  const ct = getCT();
   const grid=document.getElementById('fridge-grid');
   const colLbls=document.getElementById('col-labels');
   grid.innerHTML='';colLbls.innerHTML='';
@@ -970,7 +990,9 @@ function renderGrid(){
       if(sv&&(!wine||!wine.name.toLowerCase().includes(sv)))vis=false;
       if(!vis)slot.style.opacity='.2';
       if(wine){
-        slot.classList.add(wine.type);
+        const cols = ct.colors[wine.type] || ct.colors.red;
+        slot.style.background=`linear-gradient(160deg,${cols[0]},${cols[1]})`;
+        slot.style.borderColor=cols[2];
         const nm=document.createElement('div');nm.className='slot-wname';nm.textContent=wine.name;
         const vy=document.createElement('div');vy.className='slot-yr';vy.textContent=wine.vintage||'';
         const sn=document.createElement('div');sn.className='slot-num';sn.textContent=c+1;
@@ -978,7 +1000,7 @@ function renderGrid(){
         slot.onclick=()=>openDetail(key);
       } else {
         slot.classList.add('empty');
-        const pl=document.createElement('div');pl.className='plus-icon';pl.textContent='+';
+        const pl=document.createElement('div');pl.className='plus-icon';pl.textContent=ct.emptyIcon;
         const sn=document.createElement('div');sn.className='slot-num';sn.textContent=c+1;
         slot.appendChild(pl);slot.appendChild(sn);
         slot.onclick=()=>openAdd(ri,c,key);
@@ -1282,19 +1304,37 @@ function renderFridgeSwitcher(){
 function openFridgeSwitcher(){
   const list = document.getElementById('fridge-list');
   list.innerHTML = allFridges.map(f=>`
-    <div style="background:${f.id===configId?'rgba(201,169,110,.1)':'var(--wc)'};border:1px solid ${f.id===configId?'var(--wg)':'var(--wb)'};border-radius:10px;padding:.8rem 1rem;margin-bottom:.5rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="switchFridge('${f.id}')">
-      <div>
-        <div style="font-weight:500;font-size:.95rem">${f.name||'מקרר ללא שם'}</div>
-        <div style="font-size:.75rem;color:var(--wm);margin-top:.1rem">${f.rows} קומות × ${f.cols} תאים</div>
+    <div style="background:${f.id===configId?'rgba(201,169,110,.1)':'var(--wc)'};border:1px solid ${f.id===configId?'var(--wg)':'var(--wb)'};border-radius:10px;padding:.8rem 1rem;margin-bottom:.5rem;cursor:pointer" onclick="switchFridge('${f.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span>${(COLLECTION_TYPES[f.collection_type||'wine']||COLLECTION_TYPES.wine).icon}</span>
+          <div style="font-weight:500;font-size:.95rem">${f.name||'מקרר ללא שם'}</div>
+          ${f.is_default?'<span style="color:var(--wg);font-size:.8rem">⭐</span>':''}
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          ${f.id===configId?'<span style="color:var(--wg);font-size:.75rem">✓</span>':''}
+          <button onclick="event.stopPropagation();setDefaultFridge('${f.id}');" title="קבע כברירת מחדל" style="background:none;border:1px solid var(--wb);color:${f.is_default?'var(--wg)':'var(--wm)'};font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">⭐</button>
+          <button onclick="event.stopPropagation();renameFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid var(--wb);color:var(--wm);font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">✏️</button>
+          ${allFridges.length>1?`<button onclick="event.stopPropagation();confirmDeleteFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid rgba(139,26,42,.4);color:#f4a0ad;font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">🗑️</button>`:''}
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:.5rem">
-        ${f.id===configId?'<span style="color:var(--wg);font-size:.8rem">✓ פעיל</span>':''}
-        <button onclick="event.stopPropagation();renameFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid var(--wb);color:var(--wm);font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">✏️</button>
-        ${allFridges.length>1?`<button onclick="event.stopPropagation();confirmDeleteFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid rgba(139,26,42,.4);color:#f4a0ad;font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">🗑️</button>`:''}
-      </div>
+      <div style="font-size:.72rem;color:var(--wm)">${f.rows} ${(COLLECTION_TYPES[f.collection_type||'wine']||COLLECTION_TYPES.wine).rowLabel}ות × ${f.cols} ${(COLLECTION_TYPES[f.collection_type||'wine']||COLLECTION_TYPES.wine).slotLabel}ים · ${(COLLECTION_TYPES[f.collection_type||'wine']||COLLECTION_TYPES.wine).label}</div>
     </div>
   `).join('');
   document.getElementById('fridge-switcher-panel').classList.add('open');
+}
+
+async function setDefaultFridge(fridgeId){
+  showLoading();
+  try {
+    // Remove default from all
+    await Promise.all(allFridges.map(f=>db.updateConfig(f.id,{is_default:false})));
+    await db.updateConfig(fridgeId,{is_default:true});
+    allFridges.forEach(f=>f.is_default=(f.id===fridgeId));
+    hideLoading();
+    openFridgeSwitcher();
+    showToast('ברירת המחדל עודכנה ⭐');
+  } catch(e){hideLoading();showToast('שגיאה',true);}
 }
 
 function openAddFridge(){
@@ -1324,11 +1364,12 @@ async function saveNewFridge(){
   const name=document.getElementById('new-fridge-name').value.trim()||'מקרר חדש';
   const rows=parseInt(document.getElementById('new-fridge-rows').value);
   const cols=parseInt(document.getElementById('new-fridge-cols').value);
+  const collection_type=document.getElementById('new-fridge-type').value;
   const photo=document.getElementById('new-fridge-photo-input')._photoData||null;
   if(!rows||!cols){showToast('נא להזין ערכים תקינים',true);return;}
   showLoading();
   try {
-    const result=await db.upsertConfig({rows,cols,name,user_id:currentUser.id,fridge_photo:photo});
+    const result=await db.upsertConfig({rows,cols,name,collection_type,user_id:currentUser.id,fridge_photo:photo});
     const newFridge=result[0];
     allFridges.push(newFridge);
     closeModal('add-fridge-modal');
