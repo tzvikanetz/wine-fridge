@@ -702,6 +702,7 @@ async function loadFromDB(){
     renderBanner(); renderGrid(); renderStats();
     show('main-screen');
     hideLoading();
+    configId = null; // reset so syncFromDB picks default
     syncFromDB(true);
     return;
   }
@@ -723,9 +724,9 @@ async function syncFromDB(silent){
     }
 
     allFridges = cfgArr;
-    // Load default fridge, or keep current, or first
+    // On fresh load (no configId) use default, otherwise keep current
     const defaultFridge = cfgArr.find(f=>f.is_default);
-    const currentFridge = cfgArr.find(f=>f.id===configId) || defaultFridge || cfgArr[0];
+    const currentFridge = configId ? (cfgArr.find(f=>f.id===configId) || defaultFridge || cfgArr[0]) : (defaultFridge || cfgArr[0]);
     configId = currentFridge.id;
     config = {rows:currentFridge.rows, cols:currentFridge.cols, name:currentFridge.name, collection_type:currentFridge.collection_type||'wine'};
     fridgePhotoData = currentFridge.fridge_photo||null;
