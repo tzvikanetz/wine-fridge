@@ -318,7 +318,56 @@ textarea.finp{resize:vertical;min-height:70px}
       <div class="type-radio"><input type="radio" name="wine-type" id="type-rose" value="rose"><label for="type-rose">🌸 רוזה</label></div>
     </div>
     <div style="display:flex;gap:.8rem">
-      <div style="flex:1"><label class="flbl">זן ענבים</label><input type="text" class="finp" id="field-grape" placeholder="מרלו, קברנה..."></div>
+      <div style="flex:1">
+        <label class="flbl">זן ענבים</label>
+        <select class="finp" id="field-grape-select" onchange="handleGrapeSelect()">
+          <option value="">-- בחר זן --</option>
+          <optgroup label="🔴 אדום">
+            <option>קברנה סוביניון</option>
+            <option>מרלו</option>
+            <option>פינו נואר</option>
+            <option>שירז / סירה</option>
+            <option>מאלבק</option>
+            <option>סנג'יובזה</option>
+            <option>טמפרניו</option>
+            <option>נביולו</option>
+            <option>גרנאש</option>
+            <option>קברנה פראן</option>
+            <option>פטיט ורדו</option>
+            <option>זינפנדל</option>
+            <option>בארברה</option>
+            <option>מונטפולצ'יאנו</option>
+          </optgroup>
+          <optgroup label="🟡 לבן">
+            <option>שרדונה</option>
+            <option>סוביניון בלאן</option>
+            <option>ריזלינג</option>
+            <option>פינו גריג'יו</option>
+            <option>גוורצטרמינר</option>
+            <option>שנן בלאן</option>
+            <option>וינו ורדה</option>
+            <option>אלבריניו</option>
+            <option>גרנאש בלאן</option>
+            <option>ויוניה</option>
+            <option>מוסקט</option>
+          </optgroup>
+          <optgroup label="🌸 רוזה">
+            <option>רוזה גרנאש</option>
+            <option>רוזה סינו</option>
+            <option>רוזה פינו נואר</option>
+          </optgroup>
+          <optgroup label="🇮🇱 ישראלי">
+            <option>קברנה סוביניון ישראלי</option>
+            <option>מרלו ישראלי</option>
+            <option>שירז ישראלי</option>
+            <option>ארגמן</option>
+            <option>מרסלאן</option>
+          </optgroup>
+          <option value="__other__">✏️ אחר (הקלד ידנית)</option>
+        </select>
+        <input type="text" class="finp" id="field-grape-custom" placeholder="הקלד זן ענבים..." style="display:none;margin-top:-0.5rem">
+        <input type="hidden" id="field-grape">
+      </div>
       <div style="flex:1"><label class="flbl">שנת בציר</label><input type="number" class="finp" id="field-vintage" placeholder="2020" min="1900" max="2030"></div>
     </div>
     <div style="display:flex;gap:.8rem">
@@ -440,6 +489,12 @@ textarea.finp{resize:vertical;min-height:70px}
     <input type="number" class="finp" id="new-fridge-rows" value="6" min="1" max="30">
     <label class="flbl">כמה תאים בכל קומה?</label>
     <input type="number" class="finp" id="new-fridge-cols" value="4" min="1" max="20">
+    <label class="flbl">תמונת המקרר (אופציונלי)</label>
+    <button type="button" class="pbtn" id="new-fridge-photo-btn">📷 העלה תמונה / צלם</button>
+    <input type="file" id="new-fridge-photo-input" accept="image/*" style="display:none">
+    <div class="ppwrap" id="new-fridge-ppwrap">
+      <img id="new-fridge-ppimg" class="ppimg">
+    </div>
     <div class="modal-btn-row">
       <button class="btn-save" onclick="saveNewFridge()">צור מקרר</button>
       <button class="btn-cancel" onclick="closeModal('add-fridge-modal')">ביטול</button>
@@ -799,11 +854,27 @@ function setupPhotoButtons(){
 
   const bpi=document.getElementById('banner-photo-input');
   document.getElementById('banner-change-btn').onclick=()=>bpi.click();
-  bpi.onchange=()=>readFile(bpi,async data=>{fridgePhotoData=data;if(configId)await db.updateConfig(configId,{fridge_photo:data});renderBanner();showToast('תמונת המקרר עודכנה');});
+  bpi.onchange=()=>readFile(bpi,async data=>{
+    fridgePhotoData=data;
+    if(configId){
+      await db.updateConfig(configId,{fridge_photo:data});
+      const f=allFridges.find(f=>f.id===configId);
+      if(f) f.fridge_photo=data;
+    }
+    renderBanner();showToast('תמונת המקרר עודכנה');
+  });
 
   const stpi=document.getElementById('settings-photo-input');
   document.getElementById('settings-photo-btn').onclick=()=>stpi.click();
-  stpi.onchange=()=>readFile(stpi,async data=>{fridgePhotoData=data;if(configId)await db.updateConfig(configId,{fridge_photo:data});renderBanner();closePanel('settings-panel');showToast('תמונת המקרר עודכנה');});
+  stpi.onchange=()=>readFile(stpi,async data=>{
+    fridgePhotoData=data;
+    if(configId){
+      await db.updateConfig(configId,{fridge_photo:data});
+      const f=allFridges.find(f=>f.id===configId);
+      if(f) f.fridge_photo=data;
+    }
+    renderBanner();closePanel('settings-panel');showToast('תמונת המקרר עודכנה');
+  });
 
   const wpi=document.getElementById('wine-photo-input');
   const wci=document.getElementById('wine-camera-input');
@@ -941,7 +1012,7 @@ function openAdd(ri,ci,key,editData=null){
   document.getElementById('field-row').value=ri;
   document.getElementById('field-slot').value=ci+1;
   document.getElementById('field-name').value=editData?.name||'';
-  document.getElementById('field-grape').value=editData?.grape||'';
+  setGrapeField(editData?.grape||'');
   document.getElementById('field-vintage').value=editData?.vintage||'';
   document.getElementById('field-alcohol').value=editData?.alcohol||'';
   document.getElementById('field-price').value=editData?.price||'';
@@ -958,6 +1029,39 @@ function openAdd(ri,ci,key,editData=null){
   document.getElementById('wine-photo-input').value='';
   document.getElementById('wine-camera-input').value='';
   document.getElementById('add-modal').classList.add('active');
+}
+
+function handleGrapeSelect(){
+  const sel = document.getElementById('field-grape-select').value;
+  const custom = document.getElementById('field-grape-custom');
+  const hidden = document.getElementById('field-grape');
+  if(sel==='__other__'){
+    custom.style.display='block';
+    custom.focus();
+    hidden.value = custom.value;
+    custom.oninput = ()=>{ hidden.value=custom.value; };
+  } else {
+    custom.style.display='none';
+    hidden.value = sel;
+  }
+}
+
+function setGrapeField(val){
+  const sel = document.getElementById('field-grape-select');
+  const custom = document.getElementById('field-grape-custom');
+  const hidden = document.getElementById('field-grape');
+  hidden.value = val||'';
+  if(!val){ sel.value=''; custom.style.display='none'; return; }
+  // Check if value exists in options
+  const opts = Array.from(sel.options).map(o=>o.value);
+  if(opts.includes(val)){
+    sel.value=val; custom.style.display='none';
+  } else {
+    sel.value='__other__';
+    custom.style.display='block';
+    custom.value=val;
+    custom.oninput=()=>{ hidden.value=custom.value; };
+  }
 }
 
 function toggleDatePicker(){
@@ -1132,6 +1236,15 @@ function openAddFridge(){
   document.getElementById('new-fridge-name').value='';
   document.getElementById('new-fridge-rows').value=6;
   document.getElementById('new-fridge-cols').value=4;
+  document.getElementById('new-fridge-ppwrap').style.display='none';
+  document.getElementById('new-fridge-photo-input').value='';
+  const nfpi=document.getElementById('new-fridge-photo-input');
+  document.getElementById('new-fridge-photo-btn').onclick=()=>nfpi.click();
+  nfpi.onchange=()=>readFile(nfpi,data=>{
+    document.getElementById('new-fridge-ppimg').src=data;
+    document.getElementById('new-fridge-ppwrap').style.display='block';
+    nfpi._photoData=data;
+  });
   document.getElementById('add-fridge-modal').classList.add('active');
 }
 
@@ -1139,10 +1252,11 @@ async function saveNewFridge(){
   const name=document.getElementById('new-fridge-name').value.trim()||'מקרר חדש';
   const rows=parseInt(document.getElementById('new-fridge-rows').value);
   const cols=parseInt(document.getElementById('new-fridge-cols').value);
+  const photo=document.getElementById('new-fridge-photo-input')._photoData||null;
   if(!rows||!cols){showToast('נא להזין ערכים תקינים',true);return;}
   showLoading();
   try {
-    const result=await db.upsertConfig({rows,cols,name,user_id:currentUser.id,fridge_photo:null});
+    const result=await db.upsertConfig({rows,cols,name,user_id:currentUser.id,fridge_photo:photo});
     const newFridge=result[0];
     allFridges.push(newFridge);
     closeModal('add-fridge-modal');
