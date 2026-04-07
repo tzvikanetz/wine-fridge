@@ -844,7 +844,8 @@ async function doSignup(){
     document.querySelectorAll('.auth-tabs').forEach(t=>t.style.display='none');
   } catch(e){
     hideLoading();
-    msg.textContent = e.error_description||e.msg||'שגיאה בהרשמה';
+    const errMsg = e.error_description || e.msg || e.message || JSON.stringify(e);
+    msg.textContent = 'שגיאה: ' + errMsg;
   }
 }
 
