@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -427,7 +426,7 @@ textarea.finp{resize:vertical;min-height:70px}
 // CONFIG — שנה כאן את הפרטים שלך
 // ═══════════════════════════════════════
 const SB_URL = 'https://jaixkgjtjoifxsdrxvth.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaXhrZ2p0am9pZnhzZHJ4dnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzg1NDEsImV4cCI6MjA5MDU1NDU0MX0.5tvonphacE33PfZZeBcWJwghZwogNumtcSXvAd9_B1o';
+const SB_KEY = localStorage.getItem('sb_key') || '';
 const ADMIN_EMAIL = 'tzvikanetz@gmail.com'; // המייל שלך
 
 // ═══════════════════════════════════════
@@ -499,9 +498,11 @@ async function init(){
   if(hash.includes('access_token')){
     const params = new URLSearchParams(hash.substring(1));
     const token = params.get('access_token');
+    const refresh = params.get('refresh_token');
     if(token){
       authToken = token;
       localStorage.setItem('sb_auth_token', token);
+      if(refresh) localStorage.setItem('sb_refresh_token', refresh);
       window.location.hash = '';
     }
   }
@@ -514,7 +515,25 @@ async function init(){
     try {
       const user = await getUser();
       if(user){ currentUser=user; await loadFromDB(); return; }
-    } catch(e){ localStorage.removeItem('sb_auth_token'); authToken=null; }
+    } catch(e){
+      // Token expired — try refresh
+      const refreshToken = localStorage.getItem('sb_refresh_token');
+      if(refreshToken){
+        try {
+          const refreshed = await refreshSession(refreshToken);
+          if(refreshed){
+            authToken = refreshed.access_token;
+            localStorage.setItem('sb_auth_token', refreshed.access_token);
+            localStorage.setItem('sb_refresh_token', refreshed.refresh_token);
+            const user = await getUser();
+            if(user){ currentUser=user; await loadFromDB(); return; }
+          }
+        } catch(e2){}
+      }
+      localStorage.removeItem('sb_auth_token');
+      localStorage.removeItem('sb_refresh_token');
+      authToken=null;
+    }
   }
 
   hideLoading();
@@ -528,8 +547,64 @@ async function getUser(){
   return r.json();
 }
 
+async function refreshSession(refreshToken){
+  const r = await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({refresh_token:refreshToken})
+  });
+  if(!r.ok) throw new Error('refresh failed');
+  return r.json();
+}
+
+// ═══════════════════════════════════════
+// LOCAL CACHE
+// ═══════════════════════════════════════
+function cacheKey(uid){ return 'wf_cache_'+uid; }
+function saveCache(uid){
+  try {
+    const data = {config, configId, slots, historyLog, fridgePhotoData, ts: Date.now()};
+    // Save without photos to keep cache small, photos load from DB
+    const slim = {...data, slots:{}, historyLog:[]};
+    Object.keys(slots).forEach(k=>{ slim.slots[k]={...slots[k],photo:null}; });
+    slim.historyLog = historyLog.map(w=>({...w,photo:null}));
+    localStorage.setItem(cacheKey(uid), JSON.stringify(slim));
+  } catch(e){}
+}
+function loadCache(uid){
+  try {
+    const raw = localStorage.getItem(cacheKey(uid));
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function clearCache(uid){ localStorage.removeItem(cacheKey(uid)); }
+
 async function loadFromDB(){
+  // Try to show cached data immediately
+  const cache = loadCache(currentUser.id);
+  if(cache && cache.config){
+    config = cache.config;
+    configId = cache.configId;
+    fridgePhotoData = cache.fridgePhotoData;
+    slots = cache.slots || {};
+    historyLog = cache.historyLog || [];
+    setupPhotoButtons();
+    if(currentUser.email===ADMIN_EMAIL) document.getElementById('admin-btn').style.display='flex';
+    document.getElementById('s-email').textContent=currentUser.email;
+    renderBanner(); renderGrid(); renderStats();
+    show('main-screen');
+    hideLoading();
+    // Sync from DB in background silently
+    syncFromDB(true);
+    return;
+  }
+
+  // No cache — show loading and fetch
   showLoading();
+  await syncFromDB(false);
+}
+
+async function syncFromDB(silent){
   try {
     const [cfgArr, slotArr, histArr] = await Promise.all([
       db.getConfig(currentUser.id), db.getSlots(currentUser.id), db.getHistory(currentUser.id)
@@ -550,20 +625,23 @@ async function loadFromDB(){
     (slotArr||[]).forEach(w=>{slots[w.slot_key]=dbRowToWine(w);});
     historyLog=(histArr||[]).map(dbRowToWine);
 
-    hideLoading();
-    setupPhotoButtons();
+    saveCache(currentUser.id);
 
-    // Show admin button if admin
-    if(currentUser.email===ADMIN_EMAIL){
-      document.getElementById('admin-btn').style.display='flex';
+    if(!silent){
+      hideLoading();
+      setupPhotoButtons();
+      if(currentUser.email===ADMIN_EMAIL) document.getElementById('admin-btn').style.display='flex';
+      document.getElementById('s-email').textContent=currentUser.email;
+      show('main-screen');
     }
-    document.getElementById('s-email').textContent=currentUser.email;
 
     renderBanner(); renderGrid(); renderStats();
-    show('main-screen');
+    if(silent) showToast('המקרר עודכן מהשרת');
   } catch(e){
-    hideLoading();
-    showToast('שגיאה בטעינת הנתונים', true);
+    if(!silent){
+      hideLoading();
+      showToast('שגיאה בטעינת הנתונים', true);
+    }
     console.error(e);
   }
 }
@@ -599,6 +677,7 @@ async function doLogin(){
     const data = await sbAuth('token?grant_type=password',{email,password});
     authToken = data.access_token;
     localStorage.setItem('sb_auth_token', authToken);
+    if(data.refresh_token) localStorage.setItem('sb_refresh_token', data.refresh_token);
     currentUser = data.user;
     await loadFromDB();
   } catch(e){
@@ -647,6 +726,7 @@ async function doForgot(){
 async function doLogout(){
   try { await fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken}}); } catch(e){}
   localStorage.removeItem('sb_auth_token');
+  localStorage.removeItem('sb_refresh_token');
   authToken=null; currentUser=null;
   location.reload();
 }
@@ -672,8 +752,12 @@ function setupPhotoButtons(){
   const wci=document.getElementById('wine-camera-input');
   function handleWineFile(input){
     if(!input.files[0])return;
-    if(input.files[0].size>2*1024*1024){showToast('תמונה גדולה מדי (מקסימום 2MB)',true);return;}
-    readFile(input,data=>{winePhotoData=data;document.getElementById('wine-ppimg').src=data;document.getElementById('wine-ppwrap').style.display='block';});
+    if(input.files[0].size>15*1024*1024){showToast('תמונה גדולה מדי (מקסימום 15MB)',true);return;}
+    compressImage(input.files[0], 1200, 0.75, data=>{
+      winePhotoData=data;
+      document.getElementById('wine-ppimg').src=data;
+      document.getElementById('wine-ppwrap').style.display='block';
+    });
   }
   document.getElementById('wine-photo-btn').onclick=()=>wpi.click();
   document.getElementById('wine-camera-btn').onclick=()=>wci.click();
@@ -681,6 +765,23 @@ function setupPhotoButtons(){
   document.getElementById('wine-pch-cam-btn').onclick=()=>wci.click();
   wpi.onchange=()=>handleWineFile(wpi);
   wci.onchange=()=>handleWineFile(wci);
+}
+
+function compressImage(file, maxWidth, quality, cb){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width, h=img.height;
+      if(w>maxWidth){h=Math.round(h*maxWidth/w);w=maxWidth;}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function readFile(input,cb){
@@ -828,6 +929,7 @@ async function saveWine(){
   try {
     await db.upsertSlot(wineToDbRow(wine,key));
     slots[key]=wine;
+    saveCache(currentUser.id);
     hideLoading();closeModal('add-modal');closeModal('detail-modal');renderGrid();renderStats();showToast('היין נשמר בהצלחה');
   } catch(e){hideLoading();showToast('שגיאה בשמירה: '+e.message,true);}
 }
@@ -885,6 +987,7 @@ async function confirmRemove(key){
       const removed={...wine,dateRemoved:new Date().toISOString().split('T')[0]};
       await Promise.all([db.deleteSlot(key),db.addHistory(histToDbRow(removed))]);
       historyLog.unshift(removed);delete slots[key];
+      saveCache(currentUser.id);
       hideLoading();closeModal('detail-modal');renderGrid();renderStats();showToast('הבקבוק הועבר להיסטוריה');
     } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
@@ -961,6 +1064,7 @@ async function confirmReset(){
     showLoading();
     try {
       await Promise.all([db.deleteAllSlots(currentUser.id),db.deleteAllHistory(currentUser.id),db.deleteConfig(configId)]);
+      clearCache(currentUser.id);
       hideLoading();location.reload();
     } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
