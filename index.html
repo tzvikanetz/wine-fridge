@@ -240,6 +240,8 @@ textarea.finp{resize:vertical;min-height:70px}
     <div style="font-size:3rem;color:var(--wg);line-height:1;margin-bottom:.3rem">🍷</div>
     <div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--wg);margin-bottom:.2rem">הגדרת המקרר</div>
     <div style="color:var(--wm);font-size:.9rem;margin-bottom:2rem;font-weight:300">הגדרה ראשונית</div>
+    <label class="slbl">שם המקרר (אופציונלי)</label>
+    <input type="text" id="setup-fridge-name" class="sinp" placeholder="לדוגמה: המקרר שלי" style="font-size:.95rem">
     <label class="slbl">כמה קומות יש במקרר?</label>
     <input type="number" id="setup-rows" class="sinp" min="1" max="30" value="6">
     <label class="slbl">כמה תאים בכל קומה?</label>
@@ -258,9 +260,12 @@ textarea.finp{resize:vertical;min-height:70px}
 <!-- MAIN SCREEN -->
 <div id="main-screen" class="screen">
   <div class="app-header">
-    <div style="display:flex;align-items:center;gap:.6rem">
-      <span style="font-size:1.3rem">🍷</span>
-      <div class="app-title">מקרר היין</div>
+    <div style="display:flex;align-items:center;gap:.6rem;flex:1;min-width:0">
+      <span style="font-size:1.3rem;flex-shrink:0">🍷</span>
+      <div class="app-title" id="fridge-name-display" onclick="openFridgeSwitcher()" style="cursor:pointer;display:flex;align-items:center;gap:.3rem">
+        <span id="current-fridge-name">מקרר היין</span>
+        <span style="font-size:.7rem;color:var(--wm)" id="fridge-count-badge"></span>
+      </div>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="admin-btn" onclick="openAdmin()" style="display:none" title="אדמין">👑</button>
@@ -409,6 +414,39 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- FRIDGE SWITCHER PANEL -->
+<div class="settings-panel" id="fridge-switcher-panel">
+  <div class="side-ov" onclick="closePanel('fridge-switcher-panel')" style="position:fixed;inset:0;z-index:-1"></div>
+  <div class="settings-content">
+    <div class="side-hdr">
+      <div class="side-title">המקררים שלי</div>
+      <button class="icon-btn" onclick="closePanel('fridge-switcher-panel')">✕</button>
+    </div>
+    <div id="fridge-list"></div>
+    <div style="margin-top:1rem">
+      <button class="btn-primary" onclick="closePanel('fridge-switcher-panel');openAddFridge()">+ הוסף מקרר חדש</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FRIDGE MODAL -->
+<div class="modal-overlay" id="add-fridge-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">מקרר חדש</div>
+    <label class="flbl">שם המקרר</label>
+    <input type="text" class="finp" id="new-fridge-name" placeholder="לדוגמה: מקרר יין לבן">
+    <label class="flbl">כמה קומות?</label>
+    <input type="number" class="finp" id="new-fridge-rows" value="6" min="1" max="30">
+    <label class="flbl">כמה תאים בכל קומה?</label>
+    <input type="number" class="finp" id="new-fridge-cols" value="4" min="1" max="20">
+    <div class="modal-btn-row">
+      <button class="btn-save" onclick="saveNewFridge()">צור מקרר</button>
+      <button class="btn-cancel" onclick="closeModal('add-fridge-modal')">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -466,17 +504,19 @@ function sbAuth(path, body){
 }
 
 const db = {
+  getAllConfigs(uid){ return sbFetch(`fridge_config?select=*&user_id=eq.${uid}&order=created_at.asc`); },
   getConfig(uid){ return sbFetch(`fridge_config?select=*&user_id=eq.${uid}&limit=1`); },
   upsertConfig(data){ return sbFetch('fridge_config?on_conflict=id','POST',data,'return=representation,resolution=merge-duplicates'); },
   updateConfig(id,data){ return sbFetch(`fridge_config?id=eq.${id}`,'PATCH',data); },
-  getSlots(uid){ return sbFetch(`wine_slots?select=*&user_id=eq.${uid}`); },
-  upsertSlot(data){ return sbFetch('wine_slots?on_conflict=slot_key','POST',data,'return=representation,resolution=merge-duplicates'); },
-  deleteSlot(key){ return sbFetch(`wine_slots?slot_key=eq.${encodeURIComponent(key)}`,'DELETE'); },
+  getSlots(uid,fridgeId){ return sbFetch(`wine_slots?select=*&user_id=eq.${uid}&fridge_id=eq.${fridgeId}`); },
+  upsertSlot(data){ return sbFetch('wine_slots?on_conflict=slot_key,fridge_id','POST',data,'return=representation,resolution=merge-duplicates'); },
+  deleteSlot(key,fridgeId){ return sbFetch(`wine_slots?slot_key=eq.${encodeURIComponent(key)}&fridge_id=eq.${fridgeId}`,'DELETE'); },
   getHistory(uid){ return sbFetch(`wine_history?select=*&user_id=eq.${uid}&order=created_at.desc`); },
   addHistory(data){ return sbFetch('wine_history','POST',data); },
   deleteAllSlots(uid){ return sbFetch(`wine_slots?user_id=eq.${uid}`,'DELETE'); },
   deleteAllHistory(uid){ return sbFetch(`wine_history?user_id=eq.${uid}`,'DELETE'); },
   deleteConfig(id){ return sbFetch(`fridge_config?id=eq.${id}`,'DELETE'); },
+  deleteFridgeSlots(fridgeId){ return sbFetch(`wine_slots?fridge_id=eq.${fridgeId}`,'DELETE'); },
   getProfiles(){ return sbFetch('profiles?select=*&order=created_at.desc'); }
 };
 
@@ -484,6 +524,7 @@ const db = {
 // APP STATE
 // ═══════════════════════════════════════
 let config=null, configId=null, currentUser=null;
+let allFridges=[];  // all user's fridges
 let slots={}, historyLog=[], currentRating=0, currentFilter='all';
 let winePhotoData=null, fridgePhotoData=null;
 const TL={red:'אדום',white:'לבן',rose:'רוזה'};
@@ -580,34 +621,32 @@ function loadCache(uid){
 function clearCache(uid){ localStorage.removeItem(cacheKey(uid)); }
 
 async function loadFromDB(){
-  // Try to show cached data immediately
   const cache = loadCache(currentUser.id);
   if(cache && cache.config){
     config = cache.config;
     configId = cache.configId;
+    allFridges = cache.allFridges || [{id:configId, name:config.name||'המקרר שלי', rows:config.rows, cols:config.cols}];
     fridgePhotoData = cache.fridgePhotoData;
     slots = cache.slots || {};
     historyLog = cache.historyLog || [];
     setupPhotoButtons();
     if(currentUser.email===ADMIN_EMAIL) document.getElementById('admin-btn').style.display='flex';
     document.getElementById('s-email').textContent=currentUser.email;
+    renderFridgeSwitcher();
     renderBanner(); renderGrid(); renderStats();
     show('main-screen');
     hideLoading();
-    // Sync from DB in background silently
     syncFromDB(true);
     return;
   }
-
-  // No cache — show loading and fetch
   showLoading();
   await syncFromDB(false);
 }
 
 async function syncFromDB(silent){
   try {
-    const [cfgArr, slotArr, histArr] = await Promise.all([
-      db.getConfig(currentUser.id), db.getSlots(currentUser.id), db.getHistory(currentUser.id)
+    const [cfgArr, histArr] = await Promise.all([
+      db.getAllConfigs(currentUser.id), db.getHistory(currentUser.id)
     ]);
 
     if(!cfgArr||cfgArr.length===0){
@@ -617,10 +656,14 @@ async function syncFromDB(silent){
       return;
     }
 
-    const cfg=cfgArr[0];
-    configId=cfg.id;
-    config={rows:cfg.rows,cols:cfg.cols};
-    fridgePhotoData=cfg.fridge_photo||null;
+    allFridges = cfgArr;
+    // Keep current fridge or default to first
+    const currentFridge = cfgArr.find(f=>f.id===configId) || cfgArr[0];
+    configId = currentFridge.id;
+    config = {rows:currentFridge.rows, cols:currentFridge.cols, name:currentFridge.name};
+    fridgePhotoData = currentFridge.fridge_photo||null;
+
+    const slotArr = await db.getSlots(currentUser.id, configId);
     slots={};
     (slotArr||[]).forEach(w=>{slots[w.slot_key]=dbRowToWine(w);});
     historyLog=(histArr||[]).map(dbRowToWine);
@@ -635,25 +678,39 @@ async function syncFromDB(silent){
       show('main-screen');
     }
 
+    renderFridgeSwitcher();
     renderBanner(); renderGrid(); renderStats();
     if(silent) showToast('המקרר עודכן מהשרת');
   } catch(e){
-    if(!silent){
-      hideLoading();
-      showToast('שגיאה בטעינת הנתונים', true);
-    }
+    if(!silent){ hideLoading(); showToast('שגיאה בטעינת הנתונים', true); }
     console.error(e);
   }
 }
 
+async function switchFridge(fridgeId){
+  showLoading();
+  const fridge = allFridges.find(f=>f.id===fridgeId);
+  if(!fridge){hideLoading();return;}
+  configId = fridge.id;
+  config = {rows:fridge.rows, cols:fridge.cols, name:fridge.name};
+  fridgePhotoData = fridge.fridge_photo||null;
+  const slotArr = await db.getSlots(currentUser.id, configId);
+  slots={};
+  (slotArr||[]).forEach(w=>{slots[w.slot_key]=dbRowToWine(w);});
+  hideLoading();
+  renderFridgeSwitcher();
+  renderBanner(); renderGrid(); renderStats();
+  closePanel('fridge-switcher-panel');
+}
+
 function dbRowToWine(row){
-  return {name:row.name,type:row.type,grape:row.grape,vintage:row.vintage,alcohol:row.alcohol,price:row.price,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo};
+  return {name:row.name,type:row.type,grape:row.grape,vintage:row.vintage,alcohol:row.alcohol,price:row.price,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo,fridgeName:row.fridge_name};
 }
 function wineToDbRow(wine,key){
-  return {slot_key:key,user_id:currentUser.id,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null};
+  return {slot_key:key,user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null};
 }
 function histToDbRow(wine){
-  return {user_id:currentUser.id,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,date_removed:wine.dateRemoved||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null};
+  return {user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,date_removed:wine.dateRemoved||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null};
 }
 
 // ═══════════════════════════════════════
@@ -797,12 +854,14 @@ function readFile(input,cb){
 async function setupFridge(){
   const rows=parseInt(document.getElementById('setup-rows').value);
   const cols=parseInt(document.getElementById('setup-cols').value);
+  const name=document.getElementById('setup-fridge-name').value.trim()||'המקרר שלי';
   if(!rows||!cols||rows<1||cols<1){showToast('נא להזין ערכים תקינים',true);return;}
   showLoading();
   try {
-    const result=await db.upsertConfig({rows,cols,fridge_photo:fridgePhotoData||null,user_id:currentUser.id});
-    configId=result[0].id; config={rows,cols};
-    hideLoading(); renderBanner(); renderGrid(); renderStats(); show('main-screen');
+    const result=await db.upsertConfig({rows,cols,name,fridge_photo:fridgePhotoData||null,user_id:currentUser.id});
+    configId=result[0].id; config={rows,cols,name};
+    allFridges=[result[0]];
+    hideLoading(); renderFridgeSwitcher(); renderBanner(); renderGrid(); renderStats(); show('main-screen');
   } catch(e){hideLoading();showToast('שגיאה בשמירת ההגדרות',true);}
 }
 
@@ -985,7 +1044,7 @@ async function confirmRemove(key){
     showLoading();
     try {
       const removed={...wine,dateRemoved:new Date().toISOString().split('T')[0]};
-      await Promise.all([db.deleteSlot(key),db.addHistory(histToDbRow(removed))]);
+      await Promise.all([db.deleteSlot(key,configId),db.addHistory(histToDbRow(removed))]);
       historyLog.unshift(removed);delete slots[key];
       saveCache(currentUser.id);
       hideLoading();closeModal('detail-modal');renderGrid();renderStats();showToast('הבקבוק הועבר להיסטוריה');
@@ -1039,6 +1098,88 @@ async function openAdmin(){
   } catch(e){
     document.getElementById('admin-users-list').innerHTML='<div style="color:#f4a0ad;font-size:.85rem">שגיאה בטעינת המשתמשים</div>';
   }
+}
+
+// ═══════════════════════════════════════
+// FRIDGE SWITCHER
+// ═══════════════════════════════════════
+function renderFridgeSwitcher(){
+  const name = config?.name || 'מקרר היין';
+  document.getElementById('current-fridge-name').textContent = name;
+  const badge = document.getElementById('fridge-count-badge');
+  badge.textContent = allFridges.length > 1 ? `(${allFridges.length}) ▾` : '▾';
+}
+
+function openFridgeSwitcher(){
+  const list = document.getElementById('fridge-list');
+  list.innerHTML = allFridges.map(f=>`
+    <div style="background:${f.id===configId?'rgba(201,169,110,.1)':'var(--wc)'};border:1px solid ${f.id===configId?'var(--wg)':'var(--wb)'};border-radius:10px;padding:.8rem 1rem;margin-bottom:.5rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="switchFridge('${f.id}')">
+      <div>
+        <div style="font-weight:500;font-size:.95rem">${f.name||'מקרר ללא שם'}</div>
+        <div style="font-size:.75rem;color:var(--wm);margin-top:.1rem">${f.rows} קומות × ${f.cols} תאים</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        ${f.id===configId?'<span style="color:var(--wg);font-size:.8rem">✓ פעיל</span>':''}
+        <button onclick="event.stopPropagation();renameFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid var(--wb);color:var(--wm);font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">✏️</button>
+        ${allFridges.length>1?`<button onclick="event.stopPropagation();confirmDeleteFridge('${f.id}','${(f.name||'').replace(/'/g,"\\'")}');" style="background:none;border:1px solid rgba(139,26,42,.4);color:#f4a0ad;font-size:.72rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">🗑️</button>`:''}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('fridge-switcher-panel').classList.add('open');
+}
+
+function openAddFridge(){
+  document.getElementById('new-fridge-name').value='';
+  document.getElementById('new-fridge-rows').value=6;
+  document.getElementById('new-fridge-cols').value=4;
+  document.getElementById('add-fridge-modal').classList.add('active');
+}
+
+async function saveNewFridge(){
+  const name=document.getElementById('new-fridge-name').value.trim()||'מקרר חדש';
+  const rows=parseInt(document.getElementById('new-fridge-rows').value);
+  const cols=parseInt(document.getElementById('new-fridge-cols').value);
+  if(!rows||!cols){showToast('נא להזין ערכים תקינים',true);return;}
+  showLoading();
+  try {
+    const result=await db.upsertConfig({rows,cols,name,user_id:currentUser.id,fridge_photo:null});
+    const newFridge=result[0];
+    allFridges.push(newFridge);
+    closeModal('add-fridge-modal');
+    await switchFridge(newFridge.id);
+    hideLoading();
+    showToast('מקרר חדש נוצר!');
+  } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
+}
+
+function renameFridge(fridgeId,currentName){
+  const newName=prompt('שם חדש למקרר:',currentName);
+  if(!newName||newName===currentName) return;
+  showLoading();
+  db.updateConfig(fridgeId,{name:newName}).then(()=>{
+    const f=allFridges.find(f=>f.id===fridgeId);
+    if(f) f.name=newName;
+    if(fridgeId===configId) config.name=newName;
+    renderFridgeSwitcher();
+    openFridgeSwitcher();
+    hideLoading();
+    showToast('שם המקרר עודכן');
+  }).catch(()=>{hideLoading();showToast('שגיאה',true);});
+}
+
+function confirmDeleteFridge(fridgeId,name){
+  showConfirm('מחיקת מקרר',`האם למחוק את "${name}"? כל הבקבוקים בו יימחקו.`,async()=>{
+    showLoading();
+    try {
+      await db.deleteFridgeSlots(fridgeId);
+      await db.deleteConfig(fridgeId);
+      allFridges=allFridges.filter(f=>f.id!==fridgeId);
+      closePanel('fridge-switcher-panel');
+      await switchFridge(allFridges[0].id);
+      hideLoading();
+      showToast('המקרר נמחק');
+    } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
+  });
 }
 
 // ═══════════════════════════════════════
