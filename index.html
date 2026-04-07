@@ -210,7 +210,10 @@ textarea.finp{resize:vertical;min-height:70px}
       <label class="albl">כתובת מייל</label>
       <input type="email" class="ainp" id="login-email" placeholder="your@email.com" autocomplete="email">
       <label class="albl">סיסמה</label>
-      <input type="password" class="ainp" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      <div style="position:relative">
+        <input type="password" class="ainp" id="login-password" placeholder="••••••••" autocomplete="current-password" style="padding-left:2.5rem">
+        <span onclick="togglePass('login-password',this)" style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--wm);font-size:.9rem;user-select:none">👁</span>
+      </div>
       <div class="auth-msg error" id="login-msg"></div>
       <button class="btn-primary" onclick="doLogin()">התחבר</button>
       <span class="forgot-link" onclick="doForgot()">שכחתי סיסמה</span>
@@ -219,9 +222,15 @@ textarea.finp{resize:vertical;min-height:70px}
       <label class="albl">כתובת מייל</label>
       <input type="email" class="ainp" id="signup-email" placeholder="your@email.com" autocomplete="email">
       <label class="albl">סיסמה (לפחות 6 תווים)</label>
-      <input type="password" class="ainp" id="signup-password" placeholder="••••••••" autocomplete="new-password">
+      <div style="position:relative">
+        <input type="password" class="ainp" id="signup-password" placeholder="••••••••" autocomplete="new-password" style="padding-left:2.5rem">
+        <span onclick="togglePass('signup-password',this)" style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--wm);font-size:.9rem;user-select:none">👁</span>
+      </div>
       <label class="albl">אימות סיסמה</label>
-      <input type="password" class="ainp" id="signup-password2" placeholder="••••••••" autocomplete="new-password">
+      <div style="position:relative">
+        <input type="password" class="ainp" id="signup-password2" placeholder="••••••••" autocomplete="new-password" style="padding-left:2.5rem">
+        <span onclick="togglePass('signup-password2',this)" style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--wm);font-size:.9rem;user-select:none">👁</span>
+      </div>
       <div class="auth-msg error" id="signup-msg"></div>
       <button class="btn-primary" onclick="doSignup()">הירשם</button>
     </div>
@@ -784,6 +793,12 @@ function histToDbRow(wine){
 // ═══════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════
+function togglePass(id,icon){
+  const inp=document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';icon.style.color='var(--wg)';}
+  else{inp.type='password';icon.style.color='var(--wm)';}
+}
+
 function switchTab(tab){
   document.getElementById('login-form').style.display = tab==='login'?'block':'none';
   document.getElementById('signup-form').style.display = tab==='signup'?'block':'none';
@@ -835,16 +850,27 @@ async function doSignup(){
 
 async function doForgot(){
   const email=document.getElementById('login-email').value.trim();
-  if(!email){document.getElementById('login-msg').textContent='הכנס מייל קודם';return;}
+  const msg=document.getElementById('login-msg');
+  if(!email){msg.className='auth-msg error';msg.textContent='הכנס מייל קודם';return;}
   showLoading();
   try {
-    await sbAuth('recover',{email,options:{redirectTo:'https://tzvikanetz.github.io/wine-fridge'}});
+    const r = await fetch(SB_URL+'/auth/v1/recover',{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email, options:{redirectTo:'https://tzvikanetz.github.io/wine-fridge'}})
+    });
     hideLoading();
-    document.getElementById('login-msg').className='auth-msg success';
-    document.getElementById('login-msg').textContent='נשלח מייל לאיפוס סיסמה';
+    if(r.ok){
+      msg.className='auth-msg success';
+      msg.textContent='✓ נשלח מייל לאיפוס סיסמה — בדוק את תיבת הדואר';
+    } else {
+      msg.className='auth-msg error';
+      msg.textContent='שגיאה בשליחת המייל — נסה שוב';
+    }
   } catch(e){
     hideLoading();
-    document.getElementById('login-msg').textContent='שגיאה בשליחת המייל';
+    msg.className='auth-msg error';
+    msg.textContent='שגיאה בשליחת המייל';
   }
 }
 
@@ -1283,6 +1309,10 @@ async function openUserDetail(userId, email){
           <span style="font-size:.88rem;font-weight:500">${f.name||'מקרר ללא שם'}</span>
           <span style="font-size:.75rem;color:var(--wm)">${f.rows}×${f.cols} = ${f.rows*f.cols} מקומות</span>
         </div>`).join('')}
+      ${!isMe?`
+      <div style="margin-top:1.2rem;border-top:1px solid var(--wb);padding-top:1rem">
+        <button class="btn-danger" onclick="confirmDeleteUser('${userId}','${email.replace(/'/g,"\\'")}')">🗑️ מחק משתמש</button>
+      </div>`:''}
     `;
   } catch(e){
     document.getElementById('admin-stats').innerHTML=`
@@ -1408,6 +1438,29 @@ function confirmDeleteFridge(fridgeId,name){
       showToast('המקרר נמחק');
     } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
+}
+
+async function confirmDeleteUser(userId, email){
+  showConfirm(
+    'מחיקת משתמש',
+    `האם למחוק את "${email}"? כל הנתונים שלו יימחקו. הוא יוכל להירשם מחדש בעתיד.`,
+    async()=>{
+      showLoading();
+      try {
+        await fetch(SB_URL+'/rest/v1/rpc/delete_user',{
+          method:'POST',
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},
+          body:JSON.stringify({target_user_id:userId})
+        });
+        hideLoading();
+        showToast('המשתמש נמחק בהצלחה');
+        openAdmin();
+      } catch(e){
+        hideLoading();
+        showToast('שגיאה במחיקה: '+e.message, true);
+      }
+    }
+  );
 }
 
 // ═══════════════════════════════════════
