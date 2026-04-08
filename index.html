@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>מקרר היין שלי</title>
-<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22%D7%9E%D7%A7%D7%A8%D7%A8%20%D7%94%D7%99%D7%99%D7%9F%20%D7%A9%D7%9C%D7%99%22,%22short_name%22:%22%D7%99%D7%99%D7%9F%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d0a0e%22,%22theme_color%22:%22%230d0a0e%22,%22icons%22:[{%22src%22:%22icon-192.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22},{%22src%22:%22icon-512.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+<link rel="manifest" href="/wine-fridge/manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="מקרר היין">
 <meta name="theme-color" content="#0d0a0e">
-<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="apple-touch-icon" href="/wine-fridge/icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -324,6 +324,7 @@ textarea.finp{resize:vertical;min-height:70px}
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="admin-btn" onclick="openAdmin()" style="display:none" title="אדמין">👑</button>
+      <button class="icon-btn" id="install-btn" onclick="installApp()" style="display:none" title="התקן אפליקציה">📲</button>
       <button class="icon-btn" onclick="openAIChat()" title="שאל את ה-AI">🤖</button>
       <button class="icon-btn" onclick="toggleSearch()">🔍</button>
       <button class="icon-btn" onclick="openHistory()">📋</button>
@@ -1817,6 +1818,36 @@ function showConfirm(title,text,onOk){
 }
 
 document.querySelectorAll('.modal-overlay').forEach(ov=>{ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('active');});});
+
+// ═══════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════
+let deferredPrompt = null;
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/wine-fridge/sw.js');
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install button
+  const btn = document.getElementById('install-btn');
+  if(btn) btn.style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const btn = document.getElementById('install-btn');
+  if(btn) btn.style.display = 'none';
+  showToast('האפליקציה הותקנה בהצלחה! 🍷');
+});
+
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+}
 
 init();
 </script>
