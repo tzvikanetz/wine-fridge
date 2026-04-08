@@ -689,6 +689,7 @@ const SB_URL = 'https://jaixkgjtjoifxsdrxvth.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaXhrZ2p0am9pZnhzZHJ4dnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzg1NDEsImV4cCI6MjA5MDU1NDU0MX0.5tvonphacE33PfZZeBcWJwghZwogNumtcSXvAd9_B1o';
 const ADMIN_EMAIL = 'tzvikanetz@gmail.com';
 let GEMINI_KEY = '';
+let GROQ_KEY = '';
 
 // ═══════════════════════════════════════
 // SUPABASE CLIENT
@@ -869,10 +870,13 @@ async function loadFromDB(){
 
 async function syncFromDB(silent){
   try {
-    // Load Gemini key from settings
+    // Load AI keys from settings
     try {
-      const settings = await sbFetch('app_settings?key=eq.gemini_key&select=value');
-      if(settings && settings[0]) GEMINI_KEY = settings[0].value;
+      const settings = await sbFetch('app_settings?key=in.(gemini_key,groq_key)&select=key,value');
+      if(settings) settings.forEach(s => {
+        if(s.key==='gemini_key') GEMINI_KEY = s.value;
+        if(s.key==='groq_key') GROQ_KEY = s.value;
+      });
     } catch(e){}
 
     const [cfgArr, histArr] = await Promise.all([
@@ -1649,11 +1653,37 @@ async function confirmReset(){
 }
 
 // ═══════════════════════════════════════
-// GEMINI AI
+// AI — MULTI PROVIDER WITH FALLBACK
 // ═══════════════════════════════════════
+async function callAI(parts){
+  // Try Gemini first
+  if(GEMINI_KEY){
+    try {
+      return await callGemini(parts);
+    } catch(e){
+      const msg = e.message||'';
+      // Only fallback on quota/rate limit errors
+      if(msg.includes('429') || msg.includes('quota') || msg.includes('Quota') || msg.includes('RESOURCE_EXHAUSTED')){
+        console.log('Gemini quota reached, trying Groq...');
+      } else {
+        throw e;
+      }
+    }
+  }
+  // Fallback to Groq
+  if(GROQ_KEY){
+    try {
+      return await callGroq(parts);
+    } catch(e){
+      throw new Error('כל ספקי ה-AI הגיעו למגבלה, נסה מאוחר יותר');
+    }
+  }
+  throw new Error('לא הוגדר מפתח AI');
+}
+
 async function callGemini(parts){
-  if(!GEMINI_KEY){ throw new Error('Gemini key לא נטען — נסה לרענן'); }
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+  if(!GEMINI_KEY){ throw new Error('Gemini key לא נטען'); }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-001:generateContent?key=${GEMINI_KEY}`;
   const r = await fetch(url,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -1665,6 +1695,27 @@ async function callGemini(parts){
   }
   const data = await r.json();
   return data.candidates[0].content.parts[0].text;
+}
+
+async function callGroq(parts){
+  if(!GROQ_KEY){ throw new Error('Groq key לא נטען'); }
+  // Convert Gemini parts format to OpenAI format
+  const text = parts.filter(p=>p.text).map(p=>p.text).join('\n');
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+    body:JSON.stringify({
+      model:'llama-3.1-8b-instant',
+      messages:[{role:'user', content:text}],
+      max_tokens:1024
+    })
+  });
+  if(!r.ok){
+    const err = await r.json();
+    throw new Error(err.error?.message || 'Groq error: '+r.status);
+  }
+  const data = await r.json();
+  return data.choices[0].message.content;
 }
 
 function buildFridgeContext(){
@@ -1704,7 +1755,7 @@ async function sendAIMessage(){
   const typing=addAIMessage('...','ai',true);
   try {
     const context=buildFridgeContext();
-    const answer=await callGemini([{text:context+'\n\nשאלת המשתמש: '+q}]);
+    const answer=await callAI([{text:context+'\n\nשאלת המשתמש: '+q}]);
     typing.remove();
     addAIMessage(answer,'ai');
   } catch(e){
@@ -1773,7 +1824,7 @@ async function doScanLabel(){
 }
 אם שדה לא ברור — השאר null. החזר רק JSON, ללא טקסט נוסף.`;
 
-    const text=await callGemini([
+    const text=await callAI([
       {text:prompt},
       {inline_data:{mime_type:mimeType,data:base64}}
     ]);
