@@ -1663,6 +1663,7 @@ async function callAI(parts){
       return {text, provider:'Gemini'};
     } catch(e){
       const msg = e.message||'';
+      console.log('Gemini error:', msg);
       if(msg.includes('429') || msg.includes('quota') || msg.includes('Quota') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('404') || msg.includes('not found') || msg.includes('not supported')){
         console.log('Gemini unavailable, trying Groq...');
       } else {
