@@ -176,6 +176,52 @@ textarea.finp{resize:vertical;min-height:70px}
 .user-email{font-size:.88rem;font-weight:500;margin-bottom:.2rem}
 .user-meta{font-size:.72rem;color:var(--wm)}
 
+/* AI CHAT */
+.ai-panel{position:fixed;inset:0;z-index:300;display:none}
+.ai-panel.open{display:flex;flex-direction:column}
+.ai-content{width:100%;max-width:520px;margin:0 auto;background:var(--ws);height:100%;display:flex;flex-direction:column;border-left:1px solid var(--wb);border-right:1px solid var(--wb)}
+.ai-header{background:var(--ws);border-bottom:1px solid var(--wb);padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ai-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--wg);display:flex;align-items:center;gap:.5rem}
+.ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem}
+.ai-msg{max-width:85%;padding:.7rem .9rem;border-radius:12px;font-size:.9rem;line-height:1.5}
+.ai-msg.user{background:var(--wa);color:var(--wt);align-self:flex-end;border-radius:12px 12px 4px 12px}
+.ai-msg.bot{background:var(--wc);color:var(--wt);align-self:flex-start;border-radius:12px 12px 12px 4px;border:1px solid var(--wb)}
+.ai-msg.thinking{color:var(--wm);font-style:italic}
+.ai-input-area{border-top:1px solid var(--wb);padding:.8rem;display:flex;gap:.5rem;flex-shrink:0;background:var(--ws)}
+.ai-input{flex:1;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.6rem .9rem;border-radius:10px;font-size:.9rem;font-family:'Heebo',sans-serif;resize:none;height:44px;max-height:120px;overflow-y:auto}
+.ai-input:focus{outline:none;border-color:var(--wg)}
+.ai-send-btn{background:linear-gradient(135deg,var(--wa),var(--wr));border:none;color:var(--wt);width:44px;height:44px;border-radius:10px;cursor:pointer;font-size:1.1rem;flex-shrink:0}
+.ai-suggestions{display:flex;gap:.4rem;flex-wrap:wrap;padding:.6rem 1rem;border-bottom:1px solid var(--wb);flex-shrink:0}
+.ai-sug{background:var(--wc);border:1px solid var(--wb);color:var(--wm);padding:.3rem .7rem;border-radius:20px;font-size:.75rem;cursor:pointer;transition:all .18s;white-space:nowrap}
+.ai-sug:hover{border-color:var(--wg);color:var(--wg)}
+
+/* SCAN LABEL */
+.scan-result{background:var(--wc);border:1px solid var(--wg);border-radius:10px;padding:.8rem;margin:.5rem 0;font-size:.85rem}
+.scan-field{display:flex;justify-content:space-between;padding:.2rem 0;border-bottom:1px solid var(--wb)}
+.scan-field:last-child{border-bottom:none}
+.scan-field-label{color:var(--wm);font-size:.78rem}
+.scan-field-val{color:var(--wt);font-weight:500;font-size:.85rem}
+.ai-panel{position:fixed;inset:0;z-index:300;display:none}
+.ai-panel.open{display:flex;flex-direction:column}
+.ai-content{background:var(--ws);display:flex;flex-direction:column;height:100%;max-width:520px;width:100%;margin:0 auto;border-left:1px solid var(--wb);border-right:1px solid var(--wb)}
+.ai-header{background:var(--wc);border-bottom:1px solid var(--wb);padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem}
+.ai-msg{max-width:85%;padding:.7rem .9rem;border-radius:12px;font-size:.9rem;line-height:1.5}
+.ai-msg.user{background:var(--wa);color:var(--wt);align-self:flex-start;border-radius:12px 12px 4px 12px}
+.ai-msg.ai{background:var(--wc);color:var(--wt);align-self:flex-end;border-radius:12px 12px 12px 4px;border:1px solid var(--wb)}
+.ai-msg.typing{color:var(--wm);font-style:italic}
+.ai-input-row{padding:.8rem 1rem;border-top:1px solid var(--wb);display:flex;gap:.5rem;flex-shrink:0;background:var(--ws)}
+.ai-input{flex:1;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.65rem .9rem;border-radius:10px;font-size:.9rem;font-family:'Heebo',sans-serif;resize:none;max-height:100px;direction:rtl}
+.ai-input:focus{outline:none;border-color:var(--wg)}
+.ai-send{background:linear-gradient(135deg,var(--wa),var(--wr));border:none;color:var(--wt);width:40px;height:40px;border-radius:10px;cursor:pointer;font-size:1.1rem;flex-shrink:0}
+.ai-suggestions{display:flex;gap:.4rem;flex-wrap:wrap;padding:.5rem 1rem 0;flex-shrink:0}
+.ai-sug{background:var(--wc);border:1px solid var(--wb);color:var(--wm);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;cursor:pointer;font-family:'Heebo',sans-serif;transition:all .2s;white-space:nowrap}
+.ai-sug:hover{border-color:var(--wg);color:var(--wg)}
+
+/* SCAN BUTTON */
+.scan-wine-btn{background:linear-gradient(135deg,#1a4a1a,#0d2e0d);border:1px solid #2d6b2d;color:#90d090;padding:.5rem .9rem;border-radius:8px;font-size:.82rem;font-family:'Heebo',sans-serif;cursor:pointer;display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem;transition:all .2s}
+.scan-wine-btn:hover{border-color:#4d9d4d}
+
 /* CONFIRM */
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
 .confirm-overlay.active{display:flex}
@@ -278,6 +324,7 @@ textarea.finp{resize:vertical;min-height:70px}
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="admin-btn" onclick="openAdmin()" style="display:none" title="אדמין">👑</button>
+      <button class="icon-btn" onclick="openAIChat()" title="שאל את ה-AI">🤖</button>
       <button class="icon-btn" onclick="toggleSearch()">🔍</button>
       <button class="icon-btn" onclick="openHistory()">📋</button>
       <button class="icon-btn" onclick="openSettings()">⚙️</button>
@@ -313,6 +360,11 @@ textarea.finp{resize:vertical;min-height:70px}
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle" id="add-modal-title">הוסף יין</div>
+    <div style="margin-bottom:1rem">
+      <button type="button" class="pbtn" id="scan-label-btn" style="margin-bottom:0;border-color:var(--wg);color:var(--wg)">✨ סרוק תווית אוטומטית</button>
+      <input type="file" id="scan-label-input" accept="image/*" style="display:none">
+      <input type="file" id="scan-label-camera" accept="image/*" capture="environment" style="display:none">
+    </div>
     <input type="hidden" id="edit-key">
     <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">קומה</label><input type="text" class="finp" id="field-row" readonly style="opacity:.6"></div>
@@ -522,6 +574,100 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- AI CHAT PANEL -->
+<div class="side-panel" id="ai-panel">
+  <div class="side-ov" onclick="closePanel('ai-panel')"></div>
+  <div class="side-content" style="width:min(400px,95vw)">
+    <div class="side-hdr">
+      <div class="side-title">🤖 שאל את ה-AI</div>
+      <button class="icon-btn" onclick="closePanel('ai-panel')">✕</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--wm);margin-bottom:.8rem">ה-AI מכיר את המקרר שלך ויכול לענות על שאלות והמלצות</div>
+    <div id="ai-messages" style="flex:1;overflow-y:auto;margin-bottom:.8rem;display:flex;flex-direction:column;gap:.6rem;min-height:200px;max-height:50vh"></div>
+    <div style="display:flex;gap:.5rem">
+      <input type="text" id="ai-input" class="sfield" placeholder="שאל שאלה על המקרר שלך..." style="flex:1;margin-bottom:0" onkeydown="if(event.key==='Enter')sendAIMessage()">
+      <button class="btn-save" style="flex:0;padding:.6rem .9rem;white-space:nowrap" onclick="sendAIMessage()">שלח</button>
+    </div>
+    <div style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap">
+      <span onclick="quickAsk('איזה יין מומלץ לשתות הערב?')" style="background:var(--wc);border:1px solid var(--wb);border-radius:12px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer;color:var(--wm)">🍷 מה לשתות הערב?</span>
+      <span onclick="quickAsk('יש לי סטייק — איזה יין מתאים?')" style="background:var(--wc);border:1px solid var(--wb);border-radius:12px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer;color:var(--wm)">🥩 יין לסטייק</span>
+      <span onclick="quickAsk('תן לי סיכום של האוסף שלי')" style="background:var(--wc);border:1px solid var(--wb);border-radius:12px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer;color:var(--wm)">📊 סיכום האוסף</span>
+      <span onclick="quickAsk('איזה יין הכי יקר שיש לי?')" style="background:var(--wc);border:1px solid var(--wb);border-radius:12px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer;color:var(--wm)">💰 הכי יקר</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN LABEL MODAL -->
+<div class="modal-overlay" id="scan-modal">
+  <div class="modal" style="text-align:center">
+    <div class="mhandle"></div>
+    <div class="mtitle">סריקת תווית</div>
+    <div style="color:var(--wm);font-size:.85rem;margin-bottom:1.2rem">צלם או העלה תמונה של תווית הבקבוק — ה-AI ימלא את הפרטים אוטומטית</div>
+    <div style="display:flex;gap:.6rem;margin-bottom:1rem">
+      <button class="pbtn" id="scan-gallery-btn" style="flex:1;margin-bottom:0">🖼️ מהגלריה</button>
+      <button class="pbtn" id="scan-camera-btn" style="flex:1;margin-bottom:0">📷 צלם</button>
+    </div>
+    <div id="scan-preview-wrap" style="display:none;margin-bottom:1rem">
+      <img id="scan-preview-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px">
+    </div>
+    <div id="scan-status" style="color:var(--wm);font-size:.85rem;min-height:1.2rem;margin-bottom:.8rem"></div>
+    <div class="modal-btn-row">
+      <button class="btn-save" id="scan-go-btn" onclick="doScanLabel()" style="display:none">✨ מלא פרטים אוטומטית</button>
+      <button class="btn-cancel" onclick="closeModal('scan-modal')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI CHAT PANEL -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-content">
+    <div class="ai-header">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span style="font-size:1.2rem">🤖</span>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--wg)">עוזר יין AI</div>
+      </div>
+      <button class="icon-btn" onclick="closePanel('ai-panel')">✕</button>
+    </div>
+    <div class="ai-messages" id="ai-messages">
+      <div class="ai-msg ai">שלום! אני מכיר את המקרר שלך ויכול לעזור עם המלצות, שאלות על יין, או כל שאלה אחרת. מה תרצה לדעת? 🍷</div>
+    </div>
+    <div class="ai-suggestions" id="ai-suggestions">
+      <span class="ai-sug" onclick="askAI(this.textContent)">🍖 המלץ יין לבשר</span>
+      <span class="ai-sug" onclick="askAI(this.textContent)">🐟 המלץ יין לדגים</span>
+      <span class="ai-sug" onclick="askAI(this.textContent)">📊 סכם את האוסף שלי</span>
+      <span class="ai-sug" onclick="askAI(this.textContent)">⏳ מה הכי מוכן לשתייה?</span>
+      <span class="ai-sug" onclick="askAI(this.textContent)">💎 מה הכי יקר שיש לי?</span>
+    </div>
+    <div class="ai-input-row">
+      <textarea class="ai-input" id="ai-input" placeholder="שאל שאלה על המקרר שלך..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea>
+      <button class="ai-send" onclick="sendAIMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI CHAT PANEL -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-content">
+    <div class="ai-header">
+      <div class="ai-title">🤖 <span>עוזר יין חכם</span></div>
+      <button class="icon-btn" onclick="closePanel('ai-panel')">✕</button>
+    </div>
+    <div class="ai-suggestions" id="ai-suggestions">
+      <span class="ai-sug" onclick="sendAISug(this)">מה מומלץ לערב רומנטי?</span>
+      <span class="ai-sug" onclick="sendAISug(this)">איזה יין הכי ישן שיש לי?</span>
+      <span class="ai-sug" onclick="sendAISug(this)">המלץ יין לבשר</span>
+      <span class="ai-sug" onclick="sendAISug(this)">סכם את האוסף שלי</span>
+    </div>
+    <div class="ai-messages" id="ai-messages">
+      <div class="ai-msg bot">שלום! אני מכיר את כל המקרר שלך ויכול לעזור עם המלצות, שאלות על יינות, ועוד. מה תרצה לדעת? 🍷</div>
+    </div>
+    <div class="ai-input-area">
+      <textarea class="ai-input" id="ai-input" placeholder="שאל אותי משהו..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea>
+      <button class="ai-send-btn" onclick="sendAIMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -540,7 +686,9 @@ textarea.finp{resize:vertical;min-height:70px}
 // ═══════════════════════════════════════
 const SB_URL = 'https://jaixkgjtjoifxsdrxvth.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaXhrZ2p0am9pZnhzZHJ4dnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzg1NDEsImV4cCI6MjA5MDU1NDU0MX0.5tvonphacE33PfZZeBcWJwghZwogNumtcSXvAd9_B1o';
-const ADMIN_EMAIL = 'tzvikanetz@gmail.com'; // המייל שלך
+const ADMIN_EMAIL = 'tzvikanetz@gmail.com';
+const GEMINI_KEY = 'AIzaSyDPXohb0rz4HwiCrZ0VYvrhLdL22nbm2Tc';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=';
 
 // ═══════════════════════════════════════
 // SUPABASE CLIENT
@@ -1082,6 +1230,7 @@ function openAdd(ri,ci,key,editData=null){
   if(winePhotoData){wi.src=winePhotoData;ww.style.display='block';}else{wi.src='';ww.style.display='none';}
   document.getElementById('wine-photo-input').value='';
   document.getElementById('wine-camera-input').value='';
+  document.getElementById('scan-label-btn').onclick=()=>openScanModal();
   document.getElementById('add-modal').classList.add('active');
 }
 
@@ -1491,6 +1640,149 @@ async function confirmReset(){
       hideLoading();location.reload();
     } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
+}
+
+// ═══════════════════════════════════════
+// GEMINI AI
+// ═══════════════════════════════════════
+async function callGemini(parts){
+  const r = await fetch(GEMINI_URL+GEMINI_KEY,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts}]})
+  });
+  if(!r.ok) throw new Error('Gemini error: '+r.status);
+  const data = await r.json();
+  return data.candidates[0].content.parts[0].text;
+}
+
+function buildFridgeContext(){
+  const ct = getCT();
+  const wineList = Object.entries(slots).map(([key,w])=>{
+    const[r,c]=key.split('-');
+    return `- ${w.name} | ${TL[w.type]} | ${w.grape||'זן לא ידוע'} | ${w.vintage||'שנה לא ידועה'} | ${w.alcohol?w.alcohol+'% אלכ׳':''} | ${w.price?'₪'+w.price:''} | דירוג: ${w.rating?'★'.repeat(w.rating):'לא דורג'} | Vivino: ${w.vivino||'—'} | קומה ${r} תא ${parseInt(c)+1}${w.notes?' | הערות: '+w.notes:''}`;
+  }).join('\n');
+  return `אתה עוזר מומחה ל${ct.label}. המשתמש מנהל ${ct.label} בשם "${config.name||'האוסף שלי'}".
+האוסף מכיל ${Object.keys(slots).length} פריטים מתוך ${config.rows*config.cols} מקומות.
+
+רשימת הפריטים:
+${wineList||'האוסף ריק כרגע'}
+
+ענה בעברית, בצורה ידידותית וקצרה. אם שואלים על המלצה — המלץ ספציפית מהאוסף.`;
+}
+
+// ═══ AI CHAT ═══
+function openAIChat(){
+  document.getElementById('ai-panel').classList.add('open');
+  if(document.getElementById('ai-messages').children.length===0){
+    addAIMessage('שלום! אני מכיר את המקרר שלך ויכול לעזור עם המלצות ושאלות. מה תרצה לדעת? 🍷', 'ai');
+  }
+}
+
+function quickAsk(q){
+  document.getElementById('ai-input').value=q;
+  sendAIMessage();
+}
+
+async function sendAIMessage(){
+  const input=document.getElementById('ai-input');
+  const q=input.value.trim();
+  if(!q) return;
+  input.value='';
+  addAIMessage(q,'user');
+  const typing=addAIMessage('...','ai',true);
+  try {
+    const context=buildFridgeContext();
+    const answer=await callGemini([{text:context+'\n\nשאלת המשתמש: '+q}]);
+    typing.remove();
+    addAIMessage(answer,'ai');
+  } catch(e){
+    typing.remove();
+    addAIMessage('מצטער, אירעה שגיאה. נסה שוב.','ai');
+  }
+}
+
+function addAIMessage(text,role,isTyping=false){
+  const msgs=document.getElementById('ai-messages');
+  const div=document.createElement('div');
+  div.style.cssText=`background:${role==='user'?'var(--wa)':'var(--wc)'};border:1px solid var(--wb);border-radius:${role==='user'?'12px 12px 4px 12px':'12px 12px 12px 4px'};padding:.6rem .8rem;font-size:.85rem;line-height:1.5;max-width:90%;${role==='user'?'align-self:flex-end;margin-right:auto':'align-self:flex-start'}`;
+  div.style.color='var(--wt)';
+  div.textContent=text;
+  if(isTyping)div.style.color='var(--wm)';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+// ═══ SCAN LABEL ═══
+let scanImageData=null;
+
+function openScanModal(){
+  scanImageData=null;
+  document.getElementById('scan-preview-wrap').style.display='none';
+  document.getElementById('scan-status').textContent='';
+  document.getElementById('scan-go-btn').style.display='none';
+  document.getElementById('scan-modal').classList.add('active');
+
+  const gi=document.getElementById('scan-label-input');
+  const ci=document.getElementById('scan-label-camera');
+  document.getElementById('scan-gallery-btn').onclick=()=>gi.click();
+  document.getElementById('scan-camera-btn').onclick=()=>ci.click();
+
+  function handleScanFile(input){
+    if(!input.files[0]) return;
+    compressImage(input.files[0],1200,0.85,data=>{
+      scanImageData=data;
+      document.getElementById('scan-preview-img').src=data;
+      document.getElementById('scan-preview-wrap').style.display='block';
+      document.getElementById('scan-go-btn').style.display='block';
+      document.getElementById('scan-status').textContent='תמונה מוכנה — לחץ למילוי אוטומטי';
+    });
+  }
+  gi.onchange=()=>handleScanFile(gi);
+  ci.onchange=()=>handleScanFile(ci);
+}
+
+async function doScanLabel(){
+  if(!scanImageData){showToast('נא לבחור תמונה קודם',true);return;}
+  const status=document.getElementById('scan-status');
+  const btn=document.getElementById('scan-go-btn');
+  status.textContent='⏳ ה-AI קורא את התווית...';
+  btn.disabled=true;
+  try {
+    const base64=scanImageData.split(',')[1];
+    const mimeType=scanImageData.split(';')[0].split(':')[1];
+    const prompt=`קרא את תווית היין בתמונה והחזר JSON בלבד (ללא קוד markdown) עם השדות הבאים:
+{
+  "name": "שם היין המלא",
+  "type": "red/white/rose",
+  "grape": "זן הענבים בעברית",
+  "vintage": 2020,
+  "alcohol": 13.5
+}
+אם שדה לא ברור — השאר null. החזר רק JSON, ללא טקסט נוסף.`;
+
+    const text=await callGemini([
+      {text:prompt},
+      {inline_data:{mime_type:mimeType,data:base64}}
+    ]);
+
+    const clean=text.replace(/```json|```/g,'').trim();
+    const wine=JSON.parse(clean);
+
+    closeModal('scan-modal');
+
+    if(wine.name) document.getElementById('field-name').value=wine.name;
+    if(wine.type) document.querySelectorAll('input[name="wine-type"]').forEach(r=>r.checked=r.value===wine.type);
+    if(wine.grape) setGrapeField(wine.grape);
+    if(wine.vintage) document.getElementById('field-vintage').value=wine.vintage;
+    if(wine.alcohol) document.getElementById('field-alcohol').value=wine.alcohol;
+
+    showToast('✨ הפרטים מולאו אוטומטית!');
+  } catch(e){
+    status.textContent='שגיאה בקריאת התווית — נסה תמונה ברורה יותר';
+    btn.disabled=false;
+  }
 }
 
 // ═══════════════════════════════════════
