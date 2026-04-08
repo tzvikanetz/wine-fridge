@@ -687,8 +687,7 @@ textarea.finp{resize:vertical;min-height:70px}
 const SB_URL = 'https://jaixkgjtjoifxsdrxvth.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaXhrZ2p0am9pZnhzZHJ4dnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzg1NDEsImV4cCI6MjA5MDU1NDU0MX0.5tvonphacE33PfZZeBcWJwghZwogNumtcSXvAd9_B1o';
 const ADMIN_EMAIL = 'tzvikanetz@gmail.com';
-const GEMINI_KEY = 'AIzaSyAVM_7alp3EBvakYSiGyRylBnDcc84rX_g';
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=';
+let GEMINI_KEY = '';
 
 // ═══════════════════════════════════════
 // SUPABASE CLIENT
@@ -869,6 +868,12 @@ async function loadFromDB(){
 
 async function syncFromDB(silent){
   try {
+    // Load Gemini key from settings
+    try {
+      const settings = await sbFetch('app_settings?key=eq.gemini_key&select=value');
+      if(settings && settings[0]) GEMINI_KEY = settings[0].value;
+    } catch(e){}
+
     const [cfgArr, histArr] = await Promise.all([
       db.getAllConfigs(currentUser.id), db.getHistory(currentUser.id)
     ]);
@@ -1646,6 +1651,7 @@ async function confirmReset(){
 // GEMINI AI
 // ═══════════════════════════════════════
 async function callGemini(parts){
+  if(!GEMINI_KEY){ throw new Error('Gemini key לא נטען — נסה לרענן'); }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`;
   const r = await fetch(url,{
     method:'POST',
