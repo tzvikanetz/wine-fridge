@@ -1663,8 +1663,8 @@ async function callAI(parts){
     } catch(e){
       const msg = e.message||'';
       // Only fallback on quota/rate limit errors
-      if(msg.includes('429') || msg.includes('quota') || msg.includes('Quota') || msg.includes('RESOURCE_EXHAUSTED')){
-        console.log('Gemini quota reached, trying Groq...');
+      if(msg.includes('429') || msg.includes('quota') || msg.includes('Quota') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('404') || msg.includes('not found') || msg.includes('not supported')){
+        console.log('Gemini unavailable, trying Groq...');
       } else {
         throw e;
       }
