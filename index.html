@@ -1659,10 +1659,10 @@ async function callAI(parts){
   // Try Gemini first
   if(GEMINI_KEY){
     try {
-      return await callGemini(parts);
+      const text = await callGemini(parts);
+      return {text, provider:'Gemini'};
     } catch(e){
       const msg = e.message||'';
-      // Only fallback on quota/rate limit errors
       if(msg.includes('429') || msg.includes('quota') || msg.includes('Quota') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('404') || msg.includes('not found') || msg.includes('not supported')){
         console.log('Gemini unavailable, trying Groq...');
       } else {
@@ -1673,7 +1673,8 @@ async function callAI(parts){
   // Fallback to Groq
   if(GROQ_KEY){
     try {
-      return await callGroq(parts);
+      const text = await callGroq(parts);
+      return {text, provider:'Groq'};
     } catch(e){
       throw new Error('כל ספקי ה-AI הגיעו למגבלה, נסה מאוחר יותר');
     }
@@ -1755,22 +1756,28 @@ async function sendAIMessage(){
   const typing=addAIMessage('...','ai',true);
   try {
     const context=buildFridgeContext();
-    const answer=await callAI([{text:context+'\n\nשאלת המשתמש: '+q}]);
+    const result=await callAI([{text:context+'\n\nשאלת המשתמש: '+q}]);
     typing.remove();
-    addAIMessage(answer,'ai');
+    addAIMessage(result.text,'ai',false,result.provider);
   } catch(e){
     typing.remove();
     addAIMessage('מצטער, אירעה שגיאה: '+e.message,'ai');
   }
 }
 
-function addAIMessage(text,role,isTyping=false){
+function addAIMessage(text,role,isTyping=false,provider=null){
   const msgs=document.getElementById('ai-messages');
   const div=document.createElement('div');
   div.style.cssText=`background:${role==='user'?'var(--wa)':'var(--wc)'};border:1px solid var(--wb);border-radius:${role==='user'?'12px 12px 4px 12px':'12px 12px 12px 4px'};padding:.6rem .8rem;font-size:.85rem;line-height:1.5;max-width:90%;${role==='user'?'align-self:flex-end;margin-right:auto':'align-self:flex-start'}`;
   div.style.color='var(--wt)';
   div.textContent=text;
   if(isTyping)div.style.color='var(--wm)';
+  if(provider && role==='ai'){
+    const badge=document.createElement('div');
+    badge.textContent=provider==='Gemini'?'✨ Gemini':'⚡ Groq';
+    badge.style.cssText='font-size:.65rem;color:var(--wm);margin-top:.3rem;text-align:left';
+    div.appendChild(badge);
+  }
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
   return div;
