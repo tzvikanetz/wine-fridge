@@ -325,6 +325,7 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="header-actions">
       <button class="icon-btn" id="admin-btn" onclick="openAdmin()" style="display:none" title="אדמין">👑</button>
       <button class="icon-btn" id="install-btn" onclick="installApp()" style="display:none" title="התקן אפליקציה">📲</button>
+      <button class="icon-btn" onclick="openWishlist()" title="רשימת קניות">🛒</button>
       <button class="icon-btn" onclick="openAIChat()" title="שאל את ה-AI">🤖</button>
       <button class="icon-btn" onclick="toggleSearch()">🔍</button>
       <button class="icon-btn" onclick="openHistory()">📋</button>
@@ -373,64 +374,19 @@ textarea.finp{resize:vertical;min-height:70px}
     </div>
     <label class="flbl">שם היין *</label>
     <input type="text" class="finp" id="field-name" placeholder="לדוגמה: Opus One">
-    <label class="flbl">סוג יין</label>
-    <div class="type-radios">
-      <div class="type-radio"><input type="radio" name="wine-type" id="type-red" value="red"><label for="type-red">🔴 אדום</label></div>
-      <div class="type-radio"><input type="radio" name="wine-type" id="type-white" value="white"><label for="type-white">🟡 לבן</label></div>
-      <div class="type-radio"><input type="radio" name="wine-type" id="type-rose" value="rose"><label for="type-rose">🌸 רוזה</label></div>
-    </div>
+    <label class="flbl" id="type-label">סוג</label>
+    <div class="type-radios" id="type-radios"></div>
     <div style="display:flex;gap:.8rem">
       <div style="flex:1">
-        <label class="flbl">זן ענבים</label>
+        <label class="flbl" id="grape-label">זן / סוג</label>
         <select class="finp" id="field-grape-select" onchange="handleGrapeSelect()">
-          <option value="">-- בחר זן --</option>
-          <optgroup label="🔴 אדום">
-            <option>קברנה סוביניון</option>
-            <option>מרלו</option>
-            <option>פינו נואר</option>
-            <option>שירז / סירה</option>
-            <option>מאלבק</option>
-            <option>סנג'יובזה</option>
-            <option>טמפרניו</option>
-            <option>נביולו</option>
-            <option>גרנאש</option>
-            <option>קברנה פראן</option>
-            <option>פטיט ורדו</option>
-            <option>זינפנדל</option>
-            <option>בארברה</option>
-            <option>מונטפולצ'יאנו</option>
-          </optgroup>
-          <optgroup label="🟡 לבן">
-            <option>שרדונה</option>
-            <option>סוביניון בלאן</option>
-            <option>ריזלינג</option>
-            <option>פינו גריג'יו</option>
-            <option>גוורצטרמינר</option>
-            <option>שנן בלאן</option>
-            <option>וינו ורדה</option>
-            <option>אלבריניו</option>
-            <option>גרנאש בלאן</option>
-            <option>ויוניה</option>
-            <option>מוסקט</option>
-          </optgroup>
-          <optgroup label="🌸 רוזה">
-            <option>רוזה גרנאש</option>
-            <option>רוזה סינו</option>
-            <option>רוזה פינו נואר</option>
-          </optgroup>
-          <optgroup label="🇮🇱 ישראלי">
-            <option>קברנה סוביניון ישראלי</option>
-            <option>מרלו ישראלי</option>
-            <option>שירז ישראלי</option>
-            <option>ארגמן</option>
-            <option>מרסלאן</option>
-          </optgroup>
+          <option value="">-- בחר --</option>
           <option value="__other__">✏️ אחר (הקלד ידנית)</option>
         </select>
-        <input type="text" class="finp" id="field-grape-custom" placeholder="הקלד זן ענבים..." style="display:none;margin-top:-0.5rem">
+        <input type="text" class="finp" id="field-grape-custom" placeholder="הקלד ידנית..." style="display:none;margin-top:-0.5rem">
         <input type="hidden" id="field-grape">
       </div>
-      <div style="flex:1"><label class="flbl">שנת בציר</label><input type="number" class="finp" id="field-vintage" placeholder="2020" min="1900" max="2030"></div>
+      <div style="flex:1"><label class="flbl">שנת בציר / שנה</label><input type="number" class="finp" id="field-vintage" placeholder="2020" min="1900" max="2030"></div>
     </div>
     <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">אחוז אלכוהול</label><input type="number" class="finp" id="field-alcohol" placeholder="13.5" min="0" max="25" step="0.1"></div>
@@ -522,6 +478,10 @@ textarea.finp{resize:vertical;min-height:70px}
     <div id="admin-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem"></div>
     <div style="font-size:.75rem;color:var(--wm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem;font-weight:500">משתמשים רשומים</div>
     <div id="admin-users-list"></div>
+    <div style="margin-top:1rem;border-top:1px solid var(--wb);padding-top:1rem">
+      <button onclick="testAllAIModels()" style="width:100%;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.6rem;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.85rem">🧪 בדוק את כל מודלי ה-AI</button>
+      <div id="ai-test-results" style="margin-top:.8rem;font-size:.8rem"></div>
+    </div>
   </div>
 </div>
 
@@ -669,6 +629,51 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- WISHLIST PANEL -->
+<div class="side-panel" id="wishlist-panel">
+  <div class="side-ov" onclick="closePanel('wishlist-panel')"></div>
+  <div class="side-content">
+    <div class="side-hdr">
+      <div class="side-title">🛒 רשימת קניות</div>
+      <button class="icon-btn" onclick="closePanel('wishlist-panel')">✕</button>
+    </div>
+    <button class="btn-primary" style="margin-bottom:1rem;width:100%" onclick="openAddWishlist()">+ הוסף לרשימה</button>
+    <div id="wishlist-items"></div>
+  </div>
+</div>
+
+<!-- ADD WISHLIST MODAL -->
+<div class="modal-overlay" id="wishlist-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="wishlist-modal-title">הוסף לרשימת קניות</div>
+    <input type="hidden" id="wishlist-edit-id">
+    <label class="flbl">שם</label>
+    <input type="text" class="finp" id="wl-name" placeholder="לדוגמה: Glenlivet 18">
+    <label class="flbl">סוג אלכוהול</label>
+    <select class="finp" id="wl-type">
+      <option value="wine">🍷 יין</option>
+      <option value="whisky">🥃 ויסקי</option>
+      <option value="beer">🍺 בירה</option>
+      <option value="rum">🥃 רום</option>
+      <option value="gin">🍸 ג'ין</option>
+      <option value="vodka">🍸 וודקה</option>
+      <option value="cognac">🥃 קוניאק</option>
+      <option value="other">📦 אחר</option>
+    </select>
+    <label class="flbl">מחיר משוער (₪)</label>
+    <input type="number" class="finp" id="wl-price" placeholder="150" min="0">
+    <label class="flbl">היכן ראיתי / קישור</label>
+    <input type="text" class="finp" id="wl-source" placeholder="חנות / אתר / חבר המליץ...">
+    <label class="flbl">הערות</label>
+    <textarea class="finp" id="wl-notes" placeholder="למה רציתי אותו, טעם שציינו..." rows="3" style="resize:none"></textarea>
+    <div class="modal-btn-row">
+      <button class="btn-save" onclick="saveWishlistItem()">שמור</button>
+      <button class="btn-cancel" onclick="closeModal('wishlist-modal')">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -741,7 +746,11 @@ const db = {
   deleteAllHistory(uid){ return sbFetch(`wine_history?user_id=eq.${uid}`,'DELETE'); },
   deleteConfig(id){ return sbFetch(`fridge_config?id=eq.${id}`,'DELETE'); },
   deleteFridgeSlots(fridgeId){ return sbFetch(`wine_slots?fridge_id=eq.${fridgeId}`,'DELETE'); },
-  getProfiles(){ return sbFetch('profiles?select=*&order=created_at.desc'); }
+  getProfiles(){ return sbFetch('profiles?select=*&order=created_at.desc'); },
+  getWishlist(uid){ return sbFetch(`wishlist?select=*&user_id=eq.${uid}&order=created_at.desc`); },
+  addWishlist(data){ return sbFetch('wishlist','POST',data,'return=representation'); },
+  updateWishlist(id,data){ return sbFetch(`wishlist?id=eq.${id}`,'PATCH',data); },
+  deleteWishlist(id){ return sbFetch(`wishlist?id=eq.${id}`,'DELETE'); }
 };
 
 // ═══════════════════════════════════════
@@ -1214,10 +1223,76 @@ function renderStats(){
   `;
 }
 
+const COLLECTION_FIELDS = {
+  wine: {
+    typeLabel: 'סוג יין', grapeLabel: 'זן ענבים',
+    types: [{value:'red',label:'🔴 אדום'},{value:'white',label:'🟡 לבן'},{value:'rose',label:'🌸 רוזה'}],
+    defaultType: 'red',
+    grapeGroups: [
+      {label:'🔴 אדום', options:['קברנה סוביניון','מרלו','פינו נואר','שירז / סירה','מאלבק','סנג\'יובזה','טמפרניו','נביולו','גרנאש','קברנה פראן','פטיט ורדו','זינפנדל','בארברה','מונטפולצ\'יאנו']},
+      {label:'🟡 לבן', options:['שרדונה','סוביניון בלאן','ריזלינג','פינו גריג\'יו','גוורצטרמינר','שנן בלאן','וינו ורדה','אלבריניו','גרנאש בלאן','ויוניה','מוסקט']},
+      {label:'🌸 רוזה', options:['רוזה גרנאש','רוזה סינו','רוזה פינו נואר']},
+      {label:'🇮🇱 ישראלי', options:['קברנה סוביניון ישראלי','מרלו ישראלי','שירז ישראלי','ארגמן','מרסלאן']},
+    ]
+  },
+  whisky: {
+    typeLabel: 'סוג ויסקי', grapeLabel: 'סגנון / מוצא',
+    types: [{value:'red',label:'🥃 סינגל מאלט'},{value:'white',label:'🌾 בלנד'},{value:'rose',label:'🌽 בורבון / ריי'}],
+    defaultType: 'red',
+    grapeGroups: [
+      {label:'🏴 סקוטי', options:['היילנד','ספיסייד','איסליי','לואולנד','קמפבלטאון']},
+      {label:'🇮🇪 אירי', options:['אירי סינגל מאלט','אירי בלנד','פוט סטיל']},
+      {label:'🇺🇸 אמריקאי', options:['בורבון','ריי','טנסי','קורן']},
+      {label:'🇯🇵 יפני', options:['יפני סינגל מאלט','יפני בלנד']},
+      {label:'🌍 אחר', options:['קנדי','הודי','טייוואני','ישראלי']},
+    ]
+  },
+  beer: {
+    typeLabel: 'סוג בירה', grapeLabel: 'סגנון',
+    types: [{value:'red',label:'🟤 כהה'},{value:'white',label:'🟡 בהירה'},{value:'rose',label:'🍊 מיוחדת'}],
+    defaultType: 'white',
+    grapeGroups: [
+      {label:'🟡 בהירות', options:['לאגר','פילסנר','וויט','הפוויצן','קלש']},
+      {label:'🟤 כהות', options:['סטאוט','פורטר','דאנקל','בוק','שווארצביר']},
+      {label:'🍊 אייל', options:['IPA','APA','בלגי','ספייס','פרוטי','סאוור']},
+    ]
+  },
+  general: {
+    typeLabel: 'קטגוריה', grapeLabel: 'סוג',
+    types: [{value:'red',label:'🍷 יין'},{value:'white',label:'🥃 חריף'},{value:'rose',label:'🍺 בירה'}],
+    defaultType: 'red',
+    grapeGroups: [
+      {label:'🍷 יין', options:['יין אדום','יין לבן','רוזה','ספארקלינג']},
+      {label:'🥃 חריפים', options:['ויסקי','קוניאק','רום','ג\'ין','וודקה','טקילה']},
+      {label:'🍺 בירה', options:['בירה בהירה','בירה כהה','IPA']},
+    ]
+  }
+};
+
+function buildAddForm(){
+  const ct = getCollectionType();
+  const fields = COLLECTION_FIELDS[ct] || COLLECTION_FIELDS.wine;
+  document.getElementById('type-label').textContent = fields.typeLabel;
+  document.getElementById('grape-label').textContent = fields.grapeLabel;
+  document.getElementById('type-radios').innerHTML = fields.types.map(t=>
+    `<div class="type-radio"><input type="radio" name="wine-type" id="type-${t.value}" value="${t.value}"><label for="type-${t.value}">${t.label}</label></div>`
+  ).join('');
+  const sel = document.getElementById('field-grape-select');
+  sel.innerHTML = `<option value="">-- בחר --</option>`;
+  fields.grapeGroups.forEach(g=>{
+    const og=document.createElement('optgroup'); og.label=g.label;
+    g.options.forEach(o=>{const opt=document.createElement('option');opt.textContent=o;og.appendChild(opt);});
+    sel.appendChild(og);
+  });
+  const other=document.createElement('option'); other.value='__other__'; other.textContent='✏️ אחר (הקלד ידנית)';
+  sel.appendChild(other);
+}
+
 // ═══════════════════════════════════════
 // ADD / EDIT
 // ═══════════════════════════════════════
 function openAdd(ri,ci,key,editData=null){
+  buildAddForm();
   winePhotoData=editData?.photo||null;
   document.getElementById('add-modal-title').textContent=editData?'ערוך יין':'הוסף יין';
   document.getElementById('edit-key').value=key;
@@ -1343,9 +1418,28 @@ function buildDetail(cid,wine,key,isHist){
       ${priceStr?`<div class="dtmi"><div class="dtml">מחיר</div><div class="dtmv">${priceStr}</div></div>`:''}
     </div>
     ${wine.notes?`<div style="background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">הערות</div><div style="font-size:.9rem;color:var(--wt);line-height:1.6;white-space:pre-wrap">${wine.notes}</div></div>`:''}
-    ${!isHist?`<div class="modal-btn-row"><button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button><button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא מהמקרר</button></div>`:''}
+    ${!isHist?`<div class="modal-btn-row"><button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button><button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא מהמקרר</button></div>`:`<div class="modal-btn-row"><button class="btn-remove" onclick="confirmDeleteHistory(${historyLog.indexOf(wine)})">🗑️ מחק מההיסטוריה</button></div>`}
     <div style="margin-top:.8rem"><button class="btn-cancel" style="width:100%" onclick="closeModal('${isHist?'hist-detail-modal':'detail-modal'}')">סגור</button></div>
   `;
+}
+
+function confirmDeleteHistory(idx){
+  const wine = historyLog[idx];
+  if(!wine) return;
+  showConfirm('מחיקה מההיסטוריה', `האם למחוק את "${wine.name}" מההיסטוריה לצמיתות?`, async()=>{
+    showLoading();
+    try {
+      await sbFetch(`wine_history?user_id=eq.${currentUser.id}&name=eq.${encodeURIComponent(wine.name)}&date_removed=eq.${wine.dateRemoved}`,'DELETE');
+      historyLog.splice(idx,1);
+      saveCache(currentUser.id);
+      hideLoading();
+      closeModal('hist-detail-modal');
+      showToast('הבקבוק נמחק מההיסטוריה');
+    } catch(e){
+      hideLoading();
+      showToast('שגיאה: '+e.message, true);
+    }
+  });
 }
 
 function startEdit(key){
@@ -1483,6 +1577,126 @@ async function openUserDetail(userId, email){
 }
 
 // ═══════════════════════════════════════
+// WISHLIST
+// ═══════════════════════════════════════
+const WL_TYPE_LABELS = {wine:'🍷 יין',whisky:'🥃 ויסקי',beer:'🍺 בירה',rum:'🥃 רום',gin:'🍸 ג\'ין',vodka:'🍸 וודקה',cognac:'🥃 קוניאק',other:'📦 אחר'};
+let wishlistItems = [];
+
+async function openWishlist(){
+  document.getElementById('wishlist-panel').classList.add('open');
+  document.getElementById('wishlist-items').innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:1rem">טוען...</div>';
+  try {
+    wishlistItems = await db.getWishlist(currentUser.id) || [];
+    renderWishlist();
+  } catch(e){ showToast('שגיאה בטעינת הרשימה',true); }
+}
+
+function renderWishlist(){
+  const list = document.getElementById('wishlist-items');
+  if(!wishlistItems.length){ list.innerHTML='<div style="color:var(--wm);font-size:.85rem;text-align:center;padding:1rem">הרשימה ריקה — הוסף פריטים שתרצה לקנות</div>'; return; }
+  const pending = wishlistItems.filter(i=>!i.bought);
+  const bought = wishlistItems.filter(i=>i.bought);
+  let html = '';
+  if(pending.length) html += pending.map(item=>wishlistItemHTML(item)).join('');
+  if(bought.length){
+    html += `<div style="font-size:.72rem;color:var(--wm);margin:1rem 0 .5rem;letter-spacing:.08em">✅ נקנה</div>`;
+    html += bought.map(item=>wishlistItemHTML(item,true)).join('');
+  }
+  list.innerHTML = html;
+}
+
+function wishlistItemHTML(item, dimmed=false){
+  return `<div style="background:var(--wc);border:1px solid ${item.bought?'var(--wb)':'var(--wg)'};border-radius:10px;padding:.8rem;margin-bottom:.6rem;opacity:${dimmed?'.6':'1'}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
+      <div style="font-weight:500;font-size:.95rem${item.bought?';text-decoration:line-through':''}">${item.name}</div>
+      <div style="display:flex;gap:.4rem">
+        <button onclick="toggleWishlistBought('${item.id}',${item.bought})" style="background:none;border:1px solid var(--wb);color:var(--wm);font-size:.7rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">${item.bought?'↩️':'✅'}</button>
+        <button onclick="editWishlistItem('${item.id}')" style="background:none;border:1px solid var(--wb);color:var(--wm);font-size:.7rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">✏️</button>
+        <button onclick="deleteWishlistItem('${item.id}','${item.name.replace(/'/g,"\\'")}')" style="background:none;border:1px solid rgba(139,26,42,.4);color:#f4a0ad;font-size:.7rem;padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif">🗑️</button>
+      </div>
+    </div>
+    <div style="font-size:.75rem;color:var(--wm);display:flex;gap:.8rem;flex-wrap:wrap">
+      <span>${WL_TYPE_LABELS[item.type]||item.type}</span>
+      ${item.price?`<span>₪${item.price}</span>`:''}
+      ${item.source?`<span>📍 ${item.source}</span>`:''}
+    </div>
+    ${item.notes?`<div style="font-size:.78rem;color:var(--wt);margin-top:.4rem;opacity:.8">${item.notes}</div>`:''}
+  </div>`;
+}
+
+function openAddWishlist(){
+  document.getElementById('wishlist-modal-title').textContent = 'הוסף לרשימת קניות';
+  document.getElementById('wishlist-edit-id').value = '';
+  document.getElementById('wl-name').value = '';
+  document.getElementById('wl-type').value = 'wine';
+  document.getElementById('wl-price').value = '';
+  document.getElementById('wl-source').value = '';
+  document.getElementById('wl-notes').value = '';
+  document.getElementById('wishlist-modal').classList.add('active');
+}
+
+function editWishlistItem(id){
+  const item = wishlistItems.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('wishlist-modal-title').textContent = 'ערוך פריט';
+  document.getElementById('wishlist-edit-id').value = id;
+  document.getElementById('wl-name').value = item.name||'';
+  document.getElementById('wl-type').value = item.type||'wine';
+  document.getElementById('wl-price').value = item.price||'';
+  document.getElementById('wl-source').value = item.source||'';
+  document.getElementById('wl-notes').value = item.notes||'';
+  document.getElementById('wishlist-modal').classList.add('active');
+}
+
+async function saveWishlistItem(){
+  const name = document.getElementById('wl-name').value.trim();
+  if(!name){ showToast('נא להזין שם',true); return; }
+  const data = {
+    name, type:document.getElementById('wl-type').value,
+    price:document.getElementById('wl-price').value||null,
+    source:document.getElementById('wl-source').value.trim()||null,
+    notes:document.getElementById('wl-notes').value.trim()||null,
+    user_id:currentUser.id
+  };
+  showLoading();
+  try {
+    const editId = document.getElementById('wishlist-edit-id').value;
+    if(editId){
+      await db.updateWishlist(editId, data);
+      const idx = wishlistItems.findIndex(i=>i.id===editId);
+      if(idx>=0) wishlistItems[idx] = {...wishlistItems[idx],...data};
+    } else {
+      const result = await db.addWishlist(data);
+      wishlistItems.unshift(result[0]);
+    }
+    hideLoading();
+    closeModal('wishlist-modal');
+    renderWishlist();
+    showToast('נשמר ברשימת הקניות');
+  } catch(e){ hideLoading(); showToast('שגיאה: '+e.message,true); }
+}
+
+async function toggleWishlistBought(id, current){
+  try {
+    await db.updateWishlist(id,{bought:!current});
+    const item = wishlistItems.find(i=>i.id===id);
+    if(item) item.bought=!current;
+    renderWishlist();
+  } catch(e){ showToast('שגיאה',true); }
+}
+
+function deleteWishlistItem(id, name){
+  showConfirm('מחיקה מהרשימה', `האם למחוק את "${name}"?`, async()=>{
+    showLoading();
+    try {
+      await db.deleteWishlist(id);
+      wishlistItems = wishlistItems.filter(i=>i.id!==id);
+      hideLoading(); renderWishlist(); showToast('נמחק מהרשימה');
+    } catch(e){ hideLoading(); showToast('שגיאה',true); }
+  });
+}
+
+// ═══════════════════════════════════════
 // FRIDGE SWITCHER
 // ═══════════════════════════════════════
 function renderFridgeSwitcher(){
@@ -1598,6 +1812,51 @@ function confirmDeleteFridge(fridgeId,name){
       showToast('המקרר נמחק');
     } catch(e){hideLoading();showToast('שגיאה: '+e.message,true);}
   });
+}
+
+async function testAllAIModels(){
+  const results = document.getElementById('ai-test-results');
+  results.innerHTML = '<div style="color:var(--wm)">בודק מודלים...</div>';
+  const models = [
+    {name:'gemini-3.1-flash-lite-preview', label:'Gemini 3.1 Flash Lite'},
+    {name:'gemini-2.5-flash-lite', label:'Gemini 2.5 Flash Lite'},
+    {name:'gemini-2.5-flash', label:'Gemini 2.5 Flash'},
+    {name:'gemini-2.0-flash-lite', label:'Gemini 2.0 Flash Lite'},
+    {name:'gemini-2.0-flash', label:'Gemini 2.0 Flash'},
+  ];
+  let html = '';
+  for(const m of models){
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${m.name}:generateContent?key=${GEMINI_KEY}`;
+      const r = await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:'תענה רק: אוקיי'}]}]})
+      });
+      if(r.ok){
+        html += `<div style="color:#4caf50;padding:.3rem 0">✅ ${m.label}</div>`;
+      } else {
+        const err = await r.json();
+        const msg = err.error?.message||'שגיאה';
+        const isQuota = msg.includes('429')||msg.includes('quota')||msg.includes('RESOURCE_EXHAUSTED');
+        html += `<div style="color:${isQuota?'var(--wg)':'#f4a0ad'};padding:.3rem 0">${isQuota?'⏳':'❌'} ${m.label}${isQuota?' (הגיע למכסה)':''}</div>`;
+      }
+    } catch(e){
+      html += `<div style="color:#f4a0ad;padding:.3rem 0">❌ ${m.label}</div>`;
+    }
+  }
+  // Test Groq
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'user',content:'תענה רק: אוקיי'}],max_tokens:10})
+    });
+    html += `<div style="color:${r.ok?'#4caf50':'#f4a0ad'};padding:.3rem 0">${r.ok?'✅':'❌'} Groq</div>`;
+  } catch(e){
+    html += `<div style="color:#f4a0ad;padding:.3rem 0">❌ Groq</div>`;
+  }
+  results.innerHTML = html;
 }
 
 async function confirmDeleteUser(userId, email){
