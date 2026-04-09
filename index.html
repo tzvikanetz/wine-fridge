@@ -101,7 +101,7 @@ body{min-height:100vh;overflow-x:hidden}
 .slot-num{font-size:.55rem;color:rgba(138,122,136,.6);margin-top:2px}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.active{display:flex}
 .modal{background:var(--ws);border-radius:20px 20px 0 0;border:1px solid var(--wb);border-bottom:none;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem 1.5rem 2rem;animation:slideUp .3s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -2263,6 +2263,29 @@ function installApp(){
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
 }
+
+// ═══════════════════════════════════════
+// BACK BUTTON HANDLER
+// ═══════════════════════════════════════
+function handleBackButton(){
+  // Close modals first
+  const activeModal = document.querySelector('.modal-overlay.active');
+  if(activeModal){ activeModal.classList.remove('active'); history.pushState(null,'',location.href); return; }
+  // Close side panels
+  const activePanel = document.querySelector('.side-panel.open, .settings-panel.open, .admin-panel.open, .ai-panel.open');
+  if(activePanel){ activePanel.classList.remove('open'); history.pushState(null,'',location.href); return; }
+  // On main screen — ask before exit
+  if(document.getElementById('main-screen').classList.contains('active')){
+    showConfirm('יציאה מהאפליקציה', 'האם אתה בטוח שברצונך לצאת?', ()=>{ history.back(); });
+    history.pushState(null,'',location.href);
+    return;
+  }
+}
+
+window.addEventListener('popstate', ()=>{ handleBackButton(); });
+
+// Push initial state
+history.pushState(null, '', location.href);
 
 init();
 </script>
