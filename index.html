@@ -479,8 +479,10 @@ textarea.finp{resize:vertical;min-height:70px}
     <div style="font-size:.75rem;color:var(--wm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem;font-weight:500">משתמשים רשומים</div>
     <div id="admin-users-list"></div>
     <div style="margin-top:1rem;border-top:1px solid var(--wb);padding-top:1rem">
-      <button onclick="testAllAIModels()" style="width:100%;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.6rem;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.85rem">🧪 בדוק את כל מודלי ה-AI</button>
+      <button onclick="testAllAIModels()" style="width:100%;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.6rem;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.85rem;margin-bottom:.5rem">🧪 בדוק את כל מודלי ה-AI</button>
+      <button onclick="openAIUsageStats()" style="width:100%;background:var(--wc);border:1px solid var(--wb);color:var(--wt);padding:.6rem;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.85rem">📊 סטטיסטיקת שימוש AI</button>
       <div id="ai-test-results" style="margin-top:.8rem;font-size:.8rem"></div>
+      <div id="ai-usage-stats" style="margin-top:.8rem;font-size:.8rem"></div>
     </div>
   </div>
 </div>
@@ -750,7 +752,9 @@ const db = {
   getWishlist(uid){ return sbFetch(`wishlist?select=*&user_id=eq.${uid}&order=created_at.desc`); },
   addWishlist(data){ return sbFetch('wishlist','POST',data,'return=representation'); },
   updateWishlist(id,data){ return sbFetch(`wishlist?id=eq.${id}`,'PATCH',data); },
-  deleteWishlist(id){ return sbFetch(`wishlist?id=eq.${id}`,'DELETE'); }
+  deleteWishlist(id){ return sbFetch(`wishlist?id=eq.${id}`,'DELETE'); },
+  logAIUsage(provider){ return sbFetch('ai_usage','POST',{user_id:currentUser.id,provider,date:new Date().toISOString().split('T')[0]}); },
+  getAIUsage(){ return sbFetch('ai_usage?select=*&order=created_at.desc&limit=1000'); }
 };
 
 // ═══════════════════════════════════════
@@ -1814,6 +1818,74 @@ function confirmDeleteFridge(fridgeId,name){
   });
 }
 
+async function openAIUsageStats(){
+  const el = document.getElementById('ai-usage-stats');
+  el.innerHTML = '<div style="color:var(--wm)">טוען...</div>';
+  try {
+    const [usage, profiles] = await Promise.all([db.getAIUsage(), db.getProfiles()]);
+    if(!usage||!usage.length){ el.innerHTML='<div style="color:var(--wm)">אין נתונים עדיין</div>'; return; }
+
+    // Build email lookup
+    const emailMap = {};
+    (profiles||[]).forEach(p=>{ emailMap[p.id]=p.email; });
+
+    // Group by date
+    const byDate = {};
+    const byUser = {};
+    let total = 0;
+    usage.forEach(u=>{
+      byDate[u.date] = (byDate[u.date]||0) + 1;
+      const email = emailMap[u.user_id] || u.user_id.slice(0,8)+'...';
+      if(!byUser[email]) byUser[email]={};
+      byUser[email][u.date] = (byUser[email][u.date]||0) + 1;
+      total++;
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = byDate[today]||0;
+
+    let html = `
+      <div style="font-size:.72rem;color:var(--wm);letter-spacing:.08em;margin-bottom:.6rem;font-weight:500">📊 שימוש AI</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.8rem">
+        <div style="background:var(--wc);border-radius:8px;padding:.6rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm)">סה"כ</div>
+          <div style="font-size:1.3rem;font-weight:600;color:var(--wg)">${total}</div>
+        </div>
+        <div style="background:var(--wc);border-radius:8px;padding:.6rem;text-align:center">
+          <div style="font-size:.65rem;color:var(--wm)">היום</div>
+          <div style="font-size:1.3rem;font-weight:600;color:var(--wt)">${todayCount}</div>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">לפי תאריך:</div>`;
+
+    Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).forEach(([date,count])=>{
+      html += `<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--wb);font-size:.8rem">
+        <span style="color:var(--wm)">${date}</span>
+        <span style="font-weight:500">${count} שאילתות</span>
+      </div>`;
+    });
+
+    html += `<div style="font-size:.72rem;color:var(--wm);margin:.8rem 0 .4rem;font-weight:500">לפי משתמש:</div>`;
+    Object.entries(byUser).sort((a,b)=>{
+      const ta = Object.values(a[1]).reduce((s,v)=>s+v,0);
+      const tb = Object.values(b[1]).reduce((s,v)=>s+v,0);
+      return tb-ta;
+    }).forEach(([email, dates])=>{
+      const userTotal = Object.values(dates).reduce((s,v)=>s+v,0);
+      const userToday = dates[today]||0;
+      html += `<div style="background:var(--wc);border-radius:8px;padding:.5rem .7rem;margin-bottom:.3rem;font-size:.78rem">
+        <div style="font-weight:500;margin-bottom:.2rem">${email}</div>
+        <div style="color:var(--wm);display:flex;gap:.8rem">
+          <span>סה"כ: ${userTotal}</span>
+          ${userToday?`<span>היום: ${userToday}</span>`:''}
+        </div>
+      </div>`;
+    });
+
+    el.innerHTML = html;
+  } catch(e){ el.innerHTML=`<div style="color:#f4a0ad">שגיאה: ${e.message}</div>`; }
+}
+
 async function testAllAIModels(){
   const results = document.getElementById('ai-test-results');
   results.innerHTML = '<div style="color:var(--wm)">בודק מודלים...</div>';
@@ -1919,6 +1991,7 @@ async function callAI(parts){
   if(GEMINI_KEY){
     try {
       const text = await callGemini(parts);
+      try{ db.logAIUsage('Gemini'); }catch(e){}
       return {text, provider:'Gemini'};
     } catch(e){
       const msg = e.message||'';
@@ -1934,6 +2007,7 @@ async function callAI(parts){
   if(GROQ_KEY){
     try {
       const text = await callGroq(parts);
+      try{ db.logAIUsage('Groq'); }catch(e){}
       return {text, provider:'Groq'};
     } catch(e){
       throw new Error('כל ספקי ה-AI הגיעו למגבלה, נסה מאוחר יותר');
