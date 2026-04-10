@@ -2458,12 +2458,12 @@ Extract the information and return ONLY a JSON object (no markdown, no explanati
 }
 If a field is not visible, use null. Return ONLY the JSON.`;
 
-    const text=await callAI([
+    const result=await callAI([
       {text:prompt},
       {inline_data:{mime_type:mimeType,data:base64}}
     ]);
 
-    const clean=text.replace(/```json|```/g,'').trim();
+    const clean=result.text.replace(/```json|```/g,'').trim();
     const wine=JSON.parse(clean);
 
     closeModal('scan-modal');
