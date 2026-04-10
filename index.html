@@ -394,7 +394,7 @@ textarea.finp{resize:vertical;min-height:70px}
     </div>
     <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">אחוז אלכוהול</label><input type="number" class="finp" id="field-alcohol" placeholder="13.5" min="0" max="70" step="0.1"></div>
-      <div style="flex:1"><label class="flbl">זמן התיישנות (שנים)</label><input type="number" class="finp" id="field-aging" placeholder="5" min="0" max="100"></div>
+      <div style="flex:1"><label class="flbl">התיישנות בחבית (חודשים)</label><input type="number" class="finp" id="field-aging" placeholder="18" min="0" max="360"></div>
     </div>
     <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">מחיר (₪)</label><input type="number" class="finp" id="field-price" placeholder="120" min="0"></div>
@@ -1586,7 +1586,7 @@ function buildDetail(cid,wine,key,isHist){
       <div class="dtmi"><div class="dtml">הוכנס</div><div class="dtmv">${wine.date||'—'}</div></div>
       ${isHist&&wine.dateRemoved?`<div class="dtmi"><div class="dtml">הוצא</div><div class="dtmv">${wine.dateRemoved}</div></div>`:''}
       ${wine.drink_date?`<div class="dtmi"><div class="dtml">🕐 יעד לשתייה</div><div class="dtmv" style="color:var(--wg)">${wine.drink_date}${wine.occasion?' · '+wine.occasion:''}</div></div>`:''}
-      ${wine.aging_years?`<div class="dtmi"><div class="dtml">התיישנות</div><div class="dtmv">${wine.aging_years} שנים</div></div>`:''}
+      ${wine.aging_years?`<div class="dtmi"><div class="dtml">התיישנות בחבית</div><div class="dtmv">${wine.aging_years} חודשים</div></div>`:''}
       ${wine.rating?`<div class="dtmi"><div class="dtml">דירוג</div><div class="dtmv" style="color:var(--wg)">${sh}</div></div>`:''}
       ${wine.vivino?`<div class="dtmi"><div class="dtml">Vivino</div><div class="dtmv">⭐ ${wine.vivino}</div></div>`:''}
       ${wine.alcohol?`<div class="dtmi"><div class="dtml">אלכוהול</div><div class="dtmv">${wine.alcohol}%</div></div>`:''}
