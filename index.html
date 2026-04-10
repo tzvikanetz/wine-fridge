@@ -973,7 +973,7 @@ async function switchFridge(fridgeId){
 }
 
 function dbRowToWine(row){
-  return {name:row.name,type:row.type,grape:row.grape,winery:row.winery,vintage:row.vintage,alcohol:row.alcohol,aging_years:row.aging_years,price:row.price,region:row.region,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo,drink_date:row.drink_date,occasion:row.occasion};
+  return {id:row.id,name:row.name,type:row.type,grape:row.grape,winery:row.winery,vintage:row.vintage,alcohol:row.alcohol,aging_years:row.aging_years,price:row.price,region:row.region,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo,drink_date:row.drink_date,occasion:row.occasion};
 }
 function wineToDbRow(wine,key){
   return {slot_key:key,user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,winery:wine.winery||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,aging_years:wine.aging_years||null,price:wine.price||null,region:wine.region||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null,drink_date:wine.drink_date||null,occasion:wine.occasion||null};
@@ -1700,7 +1700,7 @@ function confirmDeleteHistory(idx){
   showConfirm('מחיקה מההיסטוריה', `האם למחוק את "${wine.name}" מההיסטוריה לצמיתות?`, async()=>{
     showLoading();
     try {
-      await sbFetch(`wine_history?user_id=eq.${currentUser.id}&name=eq.${encodeURIComponent(wine.name)}&date_removed=eq.${wine.dateRemoved}`,'DELETE');
+      await sbFetch(`wine_history?id=eq.${wine.id}`,'DELETE');
       historyLog.splice(idx,1);
       saveCache(currentUser.id);
       hideLoading();
