@@ -1593,9 +1593,105 @@ function buildDetail(cid,wine,key,isHist){
       ${priceStr?`<div class="dtmi"><div class="dtml">מחיר</div><div class="dtmv">${priceStr}</div></div>`:''}
       ${wine.grape?`<div class="dtmi"><div class="dtml">זן</div><div class="dtmv">${wine.grape}</div></div>`:''}
     ${wine.notes?`<div style="background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">הערות</div><div style="font-size:.9rem;color:var(--wt);line-height:1.6;white-space:pre-wrap">${wine.notes}</div></div>`:''}
-    ${!isHist?`<div class="modal-btn-row"><button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button><button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא מהמקרר</button></div>`:`<div class="modal-btn-row"><button class="btn-remove" onclick="confirmDeleteHistory(${historyLog.indexOf(wine)})">🗑️ מחק מההיסטוריה</button></div>`}
+    ${!isHist?`
+    <div class="modal-btn-row">
+      <button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button>
+      <button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא</button>
+    </div>
+    <div class="modal-btn-row" style="margin-top:.5rem">
+      <button class="btn-cancel" onclick="openMoveWine('${key}')">↔️ הזז תא</button>
+      <button class="btn-cancel" onclick="closeModal('detail-modal');setTimeout(()=>openDuplicatePanelFromDetail('${key}'),150)">📋 שכפל</button>
+    </div>`:`<div class="modal-btn-row"><button class="btn-remove" onclick="confirmDeleteHistory(${historyLog.indexOf(wine)})">🗑️ מחק מההיסטוריה</button></div>`}
     <div style="margin-top:.8rem"><button class="btn-cancel" style="width:100%" onclick="closeModal('${isHist?'hist-detail-modal':'detail-modal'}')">סגור</button></div>
   `;
+}
+
+function openDuplicatePanelFromDetail(key){
+  const wine = slots[key];
+  if(!wine) return;
+  const empty = [];
+  for(let r=0;r<config.rows;r++)
+    for(let c=0;c<config.cols;c++){
+      const k=`${r}-${c}`;
+      if(!slots[k] && k!==key) empty.push({r,c,k});
+    }
+  if(!empty.length){ showToast('אין תאים פנויים',true); return; }
+  openDuplicatePanel(wine, empty);
+}
+
+function openMoveWine(fromKey){
+  closeModal('detail-modal');
+  const wine = slots[fromKey];
+  if(!wine) return;
+  const[fr,fc] = fromKey.split('-');
+  // Build move modal
+  let modal = document.getElementById('move-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'move-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `<div class="modal"><div class="mhandle"></div><div class="mtitle">הזז יין</div><div id="move-content"></div></div>`;
+    document.body.appendChild(modal);
+  }
+  const empty = [];
+  for(let r=0;r<config.rows;r++)
+    for(let c=0;c<config.cols;c++){
+      const k=`${r}-${c}`;
+      if(!slots[k]) empty.push({r,c,k});
+    }
+  document.getElementById('move-content').innerHTML = `
+    <div style="font-size:.85rem;color:var(--wm);margin-bottom:1rem">
+      מזיז: <strong style="color:var(--wt)">${wine.name}</strong><br>
+      מיקום נוכחי: קומה ${fr}, תא ${parseInt(fc)+1}
+    </div>
+    <label class="flbl">בחר תא יעד:</label>
+    <div style="display:flex;gap:.8rem;margin-bottom:1rem">
+      <div style="flex:1">
+        <label class="flbl">קומה</label>
+        <select class="finp" id="move-row">
+          ${Array.from({length:config.rows},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
+        </select>
+      </div>
+      <div style="flex:1">
+        <label class="flbl">תא</label>
+        <select class="finp" id="move-col">
+          ${Array.from({length:config.cols},(_,i)=>`<option value="${i}">${i+1}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    ${empty.length?`<div style="font-size:.72rem;color:var(--wm);margin-bottom:.5rem">או בחר מהתאים הפנויים:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem">
+      ${empty.map(s=>`<button onclick="document.getElementById('move-row').value=${s.r};document.getElementById('move-col').value=${s.c}" style="background:var(--wc);border:1px solid var(--wb);color:var(--wm);padding:.3rem .6rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.75rem">קומה ${s.r} תא ${s.c+1}</button>`).join('')}
+    </div>`:''}
+    <div class="modal-btn-row">
+      <button class="btn-save" onclick="confirmMoveWine('${fromKey}')">הזז</button>
+      <button class="btn-cancel" onclick="closeModal('move-modal')">ביטול</button>
+    </div>`;
+  modal.classList.add('active');
+}
+
+async function confirmMoveWine(fromKey){
+  const toRow = document.getElementById('move-row').value;
+  const toCol = document.getElementById('move-col').value;
+  const toKey = `${toRow}-${toCol}`;
+  if(toKey === fromKey){ showToast('זה אותו תא!',true); return; }
+  if(slots[toKey]){
+    showToast(`התא תפוס — ${slots[toKey].name}. בחר תא פנוי.`,true);
+    return;
+  }
+  showLoading();
+  try {
+    const wine = slots[fromKey];
+    await db.upsertSlot(wineToDbRow(wine, toKey));
+    await db.deleteSlot(fromKey, configId);
+    slots[toKey] = wine;
+    delete slots[fromKey];
+    saveCache(currentUser.id);
+    hideLoading();
+    closeModal('move-modal');
+    renderGrid(); renderStats();
+    showToast(`הועבר לקומה ${toRow}, תא ${parseInt(toCol)+1}`);
+  } catch(e){ hideLoading(); showToast('שגיאה: '+e.message,true); }
 }
 
 function confirmDeleteHistory(idx){
