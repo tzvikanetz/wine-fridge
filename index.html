@@ -362,11 +362,13 @@ textarea.finp{resize:vertical;min-height:70px}
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle" id="add-modal-title">הוסף יין</div>
-    <div style="margin-bottom:1rem">
-      <button type="button" class="pbtn" id="scan-label-btn" style="margin-bottom:0;border-color:var(--wg);color:var(--wg)">✨ סרוק תווית אוטומטית</button>
-      <input type="file" id="scan-label-input" accept="image/*" style="display:none">
-      <input type="file" id="scan-label-camera" accept="image/*" capture="environment" style="display:none">
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <button type="button" class="pbtn" id="scan-label-btn" style="margin-bottom:0;flex:1;border-color:var(--wg);color:var(--wg)">✨ סרוק תווית</button>
+      <button type="button" class="pbtn" onclick="autoFillByName()" style="margin-bottom:0;flex:1;border-color:var(--wg);color:var(--wg)">🔍 מלא לפי שם</button>
+      <button type="button" class="pbtn" onclick="duplicateWine()" id="duplicate-btn" style="margin-bottom:0;flex:1;display:none">📋 שכפל</button>
     </div>
+    <input type="file" id="scan-label-input" accept="image/*" style="display:none">
+    <input type="file" id="scan-label-camera" accept="image/*" capture="environment" style="display:none">
     <input type="hidden" id="edit-key">
     <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">קומה</label><input type="text" class="finp" id="field-row" readonly style="opacity:.6"></div>
@@ -374,6 +376,8 @@ textarea.finp{resize:vertical;min-height:70px}
     </div>
     <label class="flbl">שם היין *</label>
     <input type="text" class="finp" id="field-name" placeholder="לדוגמה: Opus One">
+    <label class="flbl">שם היקב</label>
+    <input type="text" class="finp" id="field-winery" placeholder="לדוגמה: Château Margaux">
     <label class="flbl" id="type-label">סוג</label>
     <div class="type-radios" id="type-radios"></div>
     <div style="display:flex;gap:.8rem">
@@ -389,8 +393,12 @@ textarea.finp{resize:vertical;min-height:70px}
       <div style="flex:1"><label class="flbl">שנת בציר / שנה</label><input type="number" class="finp" id="field-vintage" placeholder="2020" min="1900" max="2030"></div>
     </div>
     <div style="display:flex;gap:.8rem">
-      <div style="flex:1"><label class="flbl">אחוז אלכוהול</label><input type="number" class="finp" id="field-alcohol" placeholder="13.5" min="0" max="25" step="0.1"></div>
+      <div style="flex:1"><label class="flbl">אחוז אלכוהול</label><input type="number" class="finp" id="field-alcohol" placeholder="13.5" min="0" max="70" step="0.1"></div>
+      <div style="flex:1"><label class="flbl">זמן התיישנות (שנים)</label><input type="number" class="finp" id="field-aging" placeholder="5" min="0" max="100"></div>
+    </div>
+    <div style="display:flex;gap:.8rem">
       <div style="flex:1"><label class="flbl">מחיר (₪)</label><input type="number" class="finp" id="field-price" placeholder="120" min="0"></div>
+      <div style="flex:1"><label class="flbl">אזור / מדינה</label><input type="text" class="finp" id="field-region" placeholder="טוסקנה, בורדו..."></div>
     </div>
     <label class="flbl">תאריך הכנסה</label>
     <select class="finp" id="date-option" onchange="toggleDatePicker()">
@@ -398,6 +406,18 @@ textarea.finp{resize:vertical;min-height:70px}
       <option value="custom">תאריך אחר</option>
     </select>
     <input type="date" class="finp" id="field-date" style="display:none">
+    <div style="background:var(--wc);border:1px solid var(--wb);border-radius:10px;padding:.8rem;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <label class="flbl" style="margin:0">🕐 שמור להתיישנות</label>
+        <input type="checkbox" id="field-aging-check" onchange="toggleAgingFields()" style="width:18px;height:18px;cursor:pointer">
+      </div>
+      <div id="aging-fields" style="display:none;margin-top:.8rem">
+        <label class="flbl">תאריך יעד לשתייה</label>
+        <input type="date" class="finp" id="field-drink-date">
+        <label class="flbl">הזדמנות / הערה</label>
+        <input type="text" class="finp" id="field-occasion" placeholder="לדוגמה: יום הולדת 50, אירוסין...">
+      </div>
+    </div>
     <label class="flbl">דירוג</label>
     <div class="rating-row">
       <div class="stars-row" id="stars-row">
@@ -425,7 +445,7 @@ textarea.finp{resize:vertical;min-height:70px}
       </div>
     </div>
     <div class="modal-btn-row">
-      <button class="btn-save" onclick="saveWine()">שמור יין</button>
+      <button class="btn-save" onclick="saveWine()">שמור</button>
       <button class="btn-cancel" onclick="closeModal('add-modal')">ביטול</button>
     </div>
   </div>
@@ -929,6 +949,7 @@ async function syncFromDB(silent){
     renderFridgeSwitcher();
     renderBanner(); renderGrid(); renderStats();
     if(silent) showToast('המקרר עודכן מהשרת');
+    if(!silent) setTimeout(checkAgingAlerts, 1500);
   } catch(e){
     if(!silent){ hideLoading(); showToast('שגיאה בטעינת הנתונים', true); }
     console.error(e);
@@ -952,13 +973,13 @@ async function switchFridge(fridgeId){
 }
 
 function dbRowToWine(row){
-  return {name:row.name,type:row.type,grape:row.grape,vintage:row.vintage,alcohol:row.alcohol,price:row.price,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo,fridgeName:row.fridge_name};
+  return {name:row.name,type:row.type,grape:row.grape,winery:row.winery,vintage:row.vintage,alcohol:row.alcohol,aging_years:row.aging_years,price:row.price,region:row.region,date:row.date_added,dateRemoved:row.date_removed,rating:row.rating,vivino:row.vivino,notes:row.notes,photo:row.photo,drink_date:row.drink_date,occasion:row.occasion};
 }
 function wineToDbRow(wine,key){
-  return {slot_key:key,user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null};
+  return {slot_key:key,user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,winery:wine.winery||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,aging_years:wine.aging_years||null,price:wine.price||null,region:wine.region||null,date_added:wine.date||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null,photo:wine.photo||null,drink_date:wine.drink_date||null,occasion:wine.occasion||null};
 }
 function histToDbRow(wine){
-  return {user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,date_added:wine.date||null,date_removed:wine.dateRemoved||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null};
+  return {user_id:currentUser.id,fridge_id:configId,name:wine.name,type:wine.type,grape:wine.grape||null,winery:wine.winery||null,vintage:wine.vintage||null,alcohol:wine.alcohol||null,price:wine.price||null,region:wine.region||null,date_added:wine.date||null,date_removed:wine.dateRemoved||null,rating:wine.rating||null,vivino:wine.vivino||null,notes:wine.notes||null};
 }
 
 // ═══════════════════════════════════════
@@ -1230,13 +1251,15 @@ function renderStats(){
 const COLLECTION_FIELDS = {
   wine: {
     typeLabel: 'סוג יין', grapeLabel: 'זן ענבים',
-    types: [{value:'red',label:'🔴 אדום'},{value:'white',label:'🟡 לבן'},{value:'rose',label:'🌸 רוזה'}],
+    types: [{value:'red',label:'🔴 אדום'},{value:'white',label:'🟡 לבן'},{value:'rose',label:'🌸 רוזה'},{value:'blend',label:'🎭 בלנד'}],
     defaultType: 'red',
     grapeGroups: [
-      {label:'🔴 אדום', options:['קברנה סוביניון','מרלו','פינו נואר','שירז / סירה','מאלבק','סנג\'יובזה','טמפרניו','נביולו','גרנאש','קברנה פראן','פטיט ורדו','זינפנדל','בארברה','מונטפולצ\'יאנו']},
-      {label:'🟡 לבן', options:['שרדונה','סוביניון בלאן','ריזלינג','פינו גריג\'יו','גוורצטרמינר','שנן בלאן','וינו ורדה','אלבריניו','גרנאש בלאן','ויוניה','מוסקט']},
-      {label:'🌸 רוזה', options:['רוזה גרנאש','רוזה סינו','רוזה פינו נואר']},
-      {label:'🇮🇱 ישראלי', options:['קברנה סוביניון ישראלי','מרלו ישראלי','שירז ישראלי','ארגמן','מרסלאן']},
+      {label:'🔴 אדום', options:['קברנה סוביניון','מרלו','פינו נואר','שירז / סירה','מאלבק','סנג\'יובזה','טמפרניו','נביולו','גרנאש','קברנה פרנק','פטי ורדו','פטי סירה','זינפנדל','בארברה','מונטפולצ\'יאנו']},
+      {label:'🟡 לבן', options:['שרדונה','סוביניון בלאן','ריזלינג','פינו גריג\'יו','גוורצטרמינר','שנן בלאן','וינו ורדה','אלבריניו','גרנאש בלאן','ויוניה','מוסקט','פינו בלאן']},
+      {label:'🌸 רוזה', options:['רוזה גרנאש','רוזה פינו נואר','רוזה סירה','רוזה קברנה']},
+      {label:'🎭 בלנד אדום', options:['מרלו-קברנה','GSM (גרנאש-שירז-מורוודר)','סופר טוסקן','בורדו בלנד','רון בלנד']},
+      {label:'🎭 בלנד לבן', options:['בלנד לבן פרוונסאל','גראב בלנד','ריזלינג-גוורצטרמינר']},
+      {label:'🇮🇱 ישראלי', options:['קברנה סוביניון ישראלי','מרלו ישראלי','שירז ישראלי','ארגמן','מרסלאן','פטי ורדו ישראלי']},
     ]
   },
   whisky: {
@@ -1303,7 +1326,23 @@ function openAdd(ri,ci,key,editData=null){
   document.getElementById('field-row').value=ri;
   document.getElementById('field-slot').value=ci+1;
   document.getElementById('field-name').value=editData?.name||'';
+  document.getElementById('field-winery').value=editData?.winery||'';
   setGrapeField(editData?.grape||'');
+  document.getElementById('field-vintage').value=editData?.vintage||'';
+  document.getElementById('field-alcohol').value=editData?.alcohol||'';
+  document.getElementById('field-aging').value=editData?.aging_years||'';
+  document.getElementById('field-price').value=editData?.price||'';
+  document.getElementById('field-region').value=editData?.region||'';
+  document.getElementById('field-notes').value=editData?.notes||'';
+  document.getElementById('field-vivino').value=editData?.vivino||'';
+  // Aging check
+  const agingCheck = document.getElementById('field-aging-check');
+  agingCheck.checked = !!editData?.drink_date;
+  document.getElementById('aging-fields').style.display = editData?.drink_date?'block':'none';
+  document.getElementById('field-drink-date').value=editData?.drink_date||'';
+  document.getElementById('field-occasion').value=editData?.occasion||'';
+  // Show duplicate button in edit mode
+  document.getElementById('duplicate-btn').style.display = key&&editData?'block':'none';
   document.getElementById('field-vintage').value=editData?.vintage||'';
   document.getElementById('field-alcohol').value=editData?.alcohol||'';
   document.getElementById('field-price').value=editData?.price||'';
@@ -1356,6 +1395,134 @@ function setGrapeField(val){
   }
 }
 
+function toggleAgingFields(){
+  const checked = document.getElementById('field-aging-check').checked;
+  document.getElementById('aging-fields').style.display = checked ? 'block' : 'none';
+}
+
+async function autoFillByName(){
+  const name = document.getElementById('field-name').value.trim();
+  if(!name){ showToast('הכנס שם יין קודם',true); return; }
+  showLoading();
+  try {
+    const prompt = `אתה מומחה יינות. המשתמש מחפש מידע על היין: "${name}".
+החזר JSON בלבד (ללא markdown) עם השדות:
+{"name":"שם מלא של היין","winery":"שם היקב","type":"red/white/rose/blend","grape":"זן עיקרי בעברית","vintage":null,"alcohol":13.5,"region":"אזור/מדינה","aging_years":5,"price_ils":150,"vivino":4.2}
+אם לא יודע ערך — שים null. החזר רק JSON.`;
+    const result = await callAI([{text:prompt}]);
+    const clean = result.text.replace(/```json|```/g,'').trim();
+    const data = JSON.parse(clean);
+    if(data.name) document.getElementById('field-name').value = data.name;
+    if(data.winery) document.getElementById('field-winery').value = data.winery;
+    if(data.type) document.querySelectorAll('input[name="wine-type"]').forEach(r=>r.checked=r.value===data.type);
+    if(data.grape) setGrapeField(data.grape);
+    if(data.vintage) document.getElementById('field-vintage').value = data.vintage;
+    if(data.alcohol) document.getElementById('field-alcohol').value = data.alcohol;
+    if(data.region) document.getElementById('field-region').value = data.region;
+    if(data.aging_years) document.getElementById('field-aging').value = data.aging_years;
+    if(data.price_ils) document.getElementById('field-price').value = data.price_ils;
+    if(data.vivino) document.getElementById('field-vivino').value = data.vivino;
+    hideLoading();
+    showToast('✨ פרטים מולאו אוטומטית!');
+  } catch(e){ hideLoading(); showToast('שגיאה: '+e.message,true); }
+}
+
+function duplicateWine(){
+  const key = document.getElementById('edit-key').value;
+  const wine = slots[key];
+  if(!wine) return;
+  // Find empty slots
+  const empty = [];
+  for(let r=0;r<config.rows;r++){
+    for(let c=0;c<config.cols;c++){
+      const k=`${r}-${c}`;
+      if(!slots[k] && k!==key) empty.push({r,c,k});
+    }
+  }
+  if(!empty.length){ showToast('אין תאים פנויים',true); return; }
+  closeModal('add-modal');
+  setTimeout(()=>openDuplicatePanel(wine, empty), 150);
+}
+
+let duplicateWineData = null;
+function openDuplicatePanel(wine, empty){
+  duplicateWineData = wine;
+  const html = `
+    <div style="font-size:.85rem;color:var(--wm);margin-bottom:.8rem">בחר תאים להעתקה של <strong style="color:var(--wt)">${wine.name}</strong>:</div>
+    <div id="dup-slots" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem">
+      ${empty.map(s=>`<button onclick="toggleDupSlot('${s.k}',this)" style="background:var(--wc);border:1px solid var(--wb);color:var(--wm);padding:.4rem .7rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.8rem">קומה ${s.r} תא ${s.c+1}</button>`).join('')}
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-save" onclick="saveDuplicates()">העתק</button>
+      <button class="btn-cancel" onclick="closeModal('duplicate-modal')">ביטול</button>
+    </div>`;
+  let modal = document.getElementById('duplicate-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'duplicate-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `<div class="modal"><div class="mhandle"></div><div class="mtitle">שכפל יין</div><div id="dup-content"></div></div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('dup-content').innerHTML = html;
+  modal.classList.add('active');
+}
+
+let selectedDupSlots = new Set();
+function toggleDupSlot(key, btn){
+  if(selectedDupSlots.has(key)){
+    selectedDupSlots.delete(key);
+    btn.style.background='var(--wc)'; btn.style.borderColor='var(--wb)'; btn.style.color='var(--wm)';
+  } else {
+    selectedDupSlots.add(key);
+    btn.style.background='rgba(201,169,110,.15)'; btn.style.borderColor='var(--wg)'; btn.style.color='var(--wg)';
+  }
+}
+
+async function saveDuplicates(){
+  if(!selectedDupSlots.size){ showToast('בחר לפחות תא אחד',true); return; }
+  showLoading();
+  try {
+    for(const key of selectedDupSlots){
+      if(slots[key]){ showToast(`תא ${key} תפוס — דולג`,true); continue; }
+      await db.upsertSlot(wineToDbRow({...duplicateWineData},key));
+      slots[key] = {...duplicateWineData};
+    }
+    selectedDupSlots.clear();
+    saveCache(currentUser.id);
+    hideLoading();
+    closeModal('duplicate-modal');
+    renderGrid(); renderStats();
+    showToast('היין שוכפל בהצלחה!');
+  } catch(e){ hideLoading(); showToast('שגיאה: '+e.message,true); }
+}
+
+// ═══ AGING ALERTS ═══
+function checkAgingAlerts(){
+  const today = new Date();
+  const soon = [];
+  Object.entries(slots).forEach(([key,wine])=>{
+    if(!wine.drink_date) return;
+    const drinkDate = new Date(wine.drink_date);
+    const daysLeft = Math.round((drinkDate-today)/(1000*60*60*24));
+    if(daysLeft<=7 && daysLeft>=0){
+      soon.push({name:wine.name, daysLeft, occasion:wine.occasion, key});
+    }
+  });
+  if(soon.length){
+    const msg = soon.map(w=>`🍷 ${w.name} — ${w.daysLeft===0?'היום!':w.daysLeft===1?'מחר!':w.daysLeft+' ימים'}${w.occasion?' ('+w.occasion+')':''}`).join('\n');
+    showAgingAlert(msg);
+  }
+}
+
+function showAgingAlert(msg){
+  const div = document.createElement('div');
+  div.style.cssText='position:fixed;top:1rem;right:1rem;left:1rem;background:var(--wc);border:1px solid var(--wg);border-radius:12px;padding:1rem;z-index:999;font-size:.85rem;line-height:1.6;direction:rtl;max-width:400px;margin:0 auto';
+  div.innerHTML=`<div style="font-weight:600;color:var(--wg);margin-bottom:.4rem">⏰ תזכורת התיישנות</div><div style="white-space:pre-line;color:var(--wt)">${msg}</div><button onclick="this.parentElement.remove()" style="margin-top:.6rem;background:none;border:1px solid var(--wb);color:var(--wm);padding:.3rem .8rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif;font-size:.8rem">סגור</button>`;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(), 15000);
+}
+
 function toggleDatePicker(){
   const opt=document.getElementById('date-option').value;
   const dp=document.getElementById('field-date');
@@ -1379,7 +1546,7 @@ async function saveWine(){
   const key=document.getElementById('edit-key').value;
   const dopt=document.getElementById('date-option').value;
   const dval=dopt==='custom'?document.getElementById('field-date').value:new Date().toISOString().split('T')[0];
-  const wine={name,type:typeEl.value,grape:document.getElementById('field-grape').value||null,vintage:document.getElementById('field-vintage').value||null,alcohol:document.getElementById('field-alcohol').value||null,price:document.getElementById('field-price').value||null,date:dval,rating:currentRating||null,vivino:document.getElementById('field-vivino').value||null,notes:document.getElementById('field-notes').value.trim()||null,photo:winePhotoData||null};
+  const wine={name,type:typeEl.value,grape:document.getElementById('field-grape').value||null,winery:document.getElementById('field-winery').value.trim()||null,vintage:document.getElementById('field-vintage').value||null,alcohol:document.getElementById('field-alcohol').value||null,aging_years:document.getElementById('field-aging').value||null,price:document.getElementById('field-price').value||null,region:document.getElementById('field-region').value.trim()||null,date:dval,rating:currentRating||null,vivino:document.getElementById('field-vivino').value||null,notes:document.getElementById('field-notes').value.trim()||null,photo:winePhotoData||null,drink_date:document.getElementById('field-aging-check').checked?document.getElementById('field-drink-date').value||null:null,occasion:document.getElementById('field-aging-check').checked?document.getElementById('field-occasion').value.trim()||null:null};
   showLoading();
   try {
     await db.upsertSlot(wineToDbRow(wine,key));
@@ -1414,13 +1581,17 @@ function buildDetail(cid,wine,key,isHist){
     <div class="dtvint">${wine.vintage?wine.vintage+' • ':''}${TL[wine.type]}</div>
     <div class="dtmeta">
       ${!isHist&&r!==null?`<div class="dtmi"><div class="dtml">מיקום</div><div class="dtmv">קומה ${r}, תא ${parseInt(c)+1}</div></div>`:''}
+      ${wine.winery?`<div class="dtmi"><div class="dtml">יקב</div><div class="dtmv">${wine.winery}</div></div>`:''}
+      ${wine.region?`<div class="dtmi"><div class="dtml">אזור</div><div class="dtmv">${wine.region}</div></div>`:''}
       <div class="dtmi"><div class="dtml">הוכנס</div><div class="dtmv">${wine.date||'—'}</div></div>
       ${isHist&&wine.dateRemoved?`<div class="dtmi"><div class="dtml">הוצא</div><div class="dtmv">${wine.dateRemoved}</div></div>`:''}
+      ${wine.drink_date?`<div class="dtmi"><div class="dtml">🕐 יעד לשתייה</div><div class="dtmv" style="color:var(--wg)">${wine.drink_date}${wine.occasion?' · '+wine.occasion:''}</div></div>`:''}
+      ${wine.aging_years?`<div class="dtmi"><div class="dtml">התיישנות</div><div class="dtmv">${wine.aging_years} שנים</div></div>`:''}
       ${wine.rating?`<div class="dtmi"><div class="dtml">דירוג</div><div class="dtmv" style="color:var(--wg)">${sh}</div></div>`:''}
       ${wine.vivino?`<div class="dtmi"><div class="dtml">Vivino</div><div class="dtmv">⭐ ${wine.vivino}</div></div>`:''}
       ${wine.alcohol?`<div class="dtmi"><div class="dtml">אלכוהול</div><div class="dtmv">${wine.alcohol}%</div></div>`:''}
       ${priceStr?`<div class="dtmi"><div class="dtml">מחיר</div><div class="dtmv">${priceStr}</div></div>`:''}
-    </div>
+      ${wine.grape?`<div class="dtmi"><div class="dtml">זן</div><div class="dtmv">${wine.grape}</div></div>`:''}
     ${wine.notes?`<div style="background:var(--wc);border-radius:8px;padding:.8rem;margin-bottom:1rem"><div style="font-size:.7rem;color:var(--wm);margin-bottom:.4rem;font-weight:500">הערות</div><div style="font-size:.9rem;color:var(--wt);line-height:1.6;white-space:pre-wrap">${wine.notes}</div></div>`:''}
     ${!isHist?`<div class="modal-btn-row"><button class="btn-edit" onclick="startEdit('${key}')">✏️ ערוך</button><button class="btn-remove" onclick="confirmRemove('${key}')">🗑️ הוצא מהמקרר</button></div>`:`<div class="modal-btn-row"><button class="btn-remove" onclick="confirmDeleteHistory(${historyLog.indexOf(wine)})">🗑️ מחק מההיסטוריה</button></div>`}
     <div style="margin-top:.8rem"><button class="btn-cancel" style="width:100%" onclick="closeModal('${isHist?'hist-detail-modal':'detail-modal'}')">סגור</button></div>
@@ -2178,15 +2349,18 @@ async function doScanLabel(){
   try {
     const base64=scanImageData.split(',')[1];
     const mimeType=scanImageData.split(';')[0].split(':')[1];
-    const prompt=`קרא את תווית היין בתמונה והחזר JSON בלבד (ללא קוד markdown) עם השדות הבאים:
+    const prompt=`You are a wine label reader. Look at this wine bottle label image carefully.
+Extract the information and return ONLY a JSON object (no markdown, no explanation):
 {
-  "name": "שם היין המלא",
-  "type": "red/white/rose",
-  "grape": "זן הענבים בעברית",
+  "name": "wine name only (not winery)",
+  "winery": "winery/producer name",
+  "type": "red OR white OR rose OR blend",
+  "grape": "grape variety in Hebrew if possible",
   "vintage": 2020,
-  "alcohol": 13.5
+  "alcohol": 13.5,
+  "region": "region and country"
 }
-אם שדה לא ברור — השאר null. החזר רק JSON, ללא טקסט נוסף.`;
+If a field is not visible, use null. Return ONLY the JSON.`;
 
     const text=await callAI([
       {text:prompt},
@@ -2199,10 +2373,12 @@ async function doScanLabel(){
     closeModal('scan-modal');
 
     if(wine.name) document.getElementById('field-name').value=wine.name;
+    if(wine.winery) document.getElementById('field-winery').value=wine.winery;
     if(wine.type) document.querySelectorAll('input[name="wine-type"]').forEach(r=>r.checked=r.value===wine.type);
     if(wine.grape) setGrapeField(wine.grape);
     if(wine.vintage) document.getElementById('field-vintage').value=wine.vintage;
     if(wine.alcohol) document.getElementById('field-alcohol').value=wine.alcohol;
+    if(wine.region) document.getElementById('field-region').value=wine.region;
 
     showToast('✨ הפרטים מולאו אוטומטית!');
   } catch(e){
