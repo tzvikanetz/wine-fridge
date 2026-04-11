@@ -2158,10 +2158,12 @@ async function testAllAIModels(){
   results.innerHTML = '<div style="color:var(--wm)">בודק מודלים...</div>';
   const models = [
     {name:'gemini-3.1-flash-lite-preview', label:'Gemini 3.1 Flash Lite'},
+    {name:'gemini-3-flash-preview', label:'Gemini 3 Flash'},
+    {name:'gemini-3-pro-preview', label:'Gemini 3 Pro'},
     {name:'gemini-2.5-flash-lite', label:'Gemini 2.5 Flash Lite'},
     {name:'gemini-2.5-flash', label:'Gemini 2.5 Flash'},
-    {name:'gemini-2.0-flash-lite', label:'Gemini 2.0 Flash Lite'},
-    {name:'gemini-2.0-flash', label:'Gemini 2.0 Flash'},
+    {name:'gemini-flash-lite-latest', label:'Gemini Flash Lite Latest'},
+    {name:'gemini-flash-latest', label:'Gemini Flash Latest'},
   ];
   let html = '';
   for(const m of models){
@@ -2287,10 +2289,12 @@ async function callGemini(parts){
   if(!GEMINI_KEY){ throw new Error('Gemini key לא נטען'); }
   const models = [
     'gemini-3.1-flash-lite-preview',
+    'gemini-3-flash-preview',
+    'gemini-3-pro-preview',
     'gemini-2.5-flash-lite',
     'gemini-2.5-flash',
-    'gemini-2.0-flash-lite',
-    'gemini-2.0-flash',
+    'gemini-flash-lite-latest',
+    'gemini-flash-latest',
   ];
   for(const model of models){
     try {
@@ -2458,16 +2462,28 @@ Extract the information and return ONLY a JSON object (no markdown, no explanati
 }
 If a field is not visible, use null. Return ONLY the JSON.`;
 
-    const result=await callAI([
-      {text:prompt},
-      {inline_data:{mime_type:mimeType,data:base64}}
-    ]);
+    // Use gemini-2.5-flash specifically for image scanning (best vision model available)
+    if(!GEMINI_KEY) throw new Error('Gemini key לא נטען');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+    const r = await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[
+        {text:prompt},
+        {inline_data:{mime_type:mimeType,data:base64}}
+      ]}]})
+    });
+    if(!r.ok){
+      const err = await r.json();
+      throw new Error(err.error?.message||'שגיאה בסריקה');
+    }
+    const data = await r.json();
+    const text = data.candidates[0].content.parts[0].text;
 
-    const clean=result.text.replace(/```json|```/g,'').trim();
+    const clean=text.replace(/```json|```/g,'').trim();
     const wine=JSON.parse(clean);
 
     closeModal('scan-modal');
-
     if(wine.name) document.getElementById('field-name').value=wine.name;
     if(wine.winery) document.getElementById('field-winery').value=wine.winery;
     if(wine.type) document.querySelectorAll('input[name="wine-type"]').forEach(r=>r.checked=r.value===wine.type);
@@ -2475,7 +2491,6 @@ If a field is not visible, use null. Return ONLY the JSON.`;
     if(wine.vintage) document.getElementById('field-vintage').value=wine.vintage;
     if(wine.alcohol) document.getElementById('field-alcohol').value=wine.alcohol;
     if(wine.region) document.getElementById('field-region').value=wine.region;
-
     showToast('✨ הפרטים מולאו אוטומטית!');
   } catch(e){
     status.textContent='שגיאה: '+e.message+' — נסה שוב';
