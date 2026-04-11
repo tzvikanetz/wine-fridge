@@ -2157,13 +2157,12 @@ async function testAllAIModels(){
   const results = document.getElementById('ai-test-results');
   results.innerHTML = '<div style="color:var(--wm)">בודק מודלים...</div>';
   const models = [
-    {name:'gemini-3.1-flash-lite-preview', label:'Gemini 3.1 Flash Lite'},
-    {name:'gemini-3-flash-preview', label:'Gemini 3 Flash'},
-    {name:'gemini-3-pro-preview', label:'Gemini 3 Pro'},
     {name:'gemini-2.5-flash-lite', label:'Gemini 2.5 Flash Lite'},
     {name:'gemini-2.5-flash', label:'Gemini 2.5 Flash'},
     {name:'gemini-flash-lite-latest', label:'Gemini Flash Lite Latest'},
     {name:'gemini-flash-latest', label:'Gemini Flash Latest'},
+    {name:'gemini-3.1-flash-lite-preview', label:'Gemini 3.1 Flash Lite'},
+    {name:'gemini-3-flash-preview', label:'Gemini 3 Flash'},
   ];
   let html = '';
   for(const m of models){
@@ -2288,13 +2287,12 @@ async function callAI(parts){
 async function callGemini(parts){
   if(!GEMINI_KEY){ throw new Error('Gemini key לא נטען'); }
   const models = [
-    'gemini-3.1-flash-lite-preview',
-    'gemini-3-flash-preview',
-    'gemini-3-pro-preview',
     'gemini-2.5-flash-lite',
     'gemini-2.5-flash',
     'gemini-flash-lite-latest',
     'gemini-flash-latest',
+    'gemini-3.1-flash-lite-preview',
+    'gemini-3-flash-preview',
   ];
   for(const model of models){
     try {
@@ -2462,23 +2460,46 @@ Extract the information and return ONLY a JSON object (no markdown, no explanati
 }
 If a field is not visible, use null. Return ONLY the JSON.`;
 
-    // Use gemini-2.5-flash specifically for image scanning (best vision model available)
+    // Vision models fallback - best for image scanning
+    const visionModels = [
+      'gemini-3.1-flash-lite-preview',
+      'gemini-3-flash-preview',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-flash-latest',
+    ];
+
     if(!GEMINI_KEY) throw new Error('Gemini key לא נטען');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-    const r = await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[
-        {text:prompt},
-        {inline_data:{mime_type:mimeType,data:base64}}
-      ]}]})
-    });
-    if(!r.ok){
-      const err = await r.json();
-      throw new Error(err.error?.message||'שגיאה בסריקה');
+    let text = null;
+    for(const model of visionModels){
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`;
+        const r = await fetch(url,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({contents:[{parts:[
+            {text:prompt},
+            {inline_data:{mime_type:mimeType,data:base64}}
+          ]}]})
+        });
+        if(!r.ok){
+          const err = await r.json();
+          const msg = err.error?.message||'';
+          if(msg.includes('429')||msg.includes('quota')||msg.includes('RESOURCE_EXHAUSTED')||msg.includes('not found')||msg.includes('not supported')){
+            console.log(`Scan: ${model} failed, trying next...`);
+            continue;
+          }
+          throw new Error(msg);
+        }
+        const data = await r.json();
+        text = data.candidates[0].content.parts[0].text;
+        console.log(`Scan used: ${model}`);
+        break;
+      } catch(e){
+        if(visionModels.indexOf(model)===visionModels.length-1) throw e;
+      }
     }
-    const data = await r.json();
-    const text = data.candidates[0].content.parts[0].text;
+    if(!text) throw new Error('כל המודלים נכשלו');
 
     const clean=text.replace(/```json|```/g,'').trim();
     const wine=JSON.parse(clean);
