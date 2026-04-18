@@ -2513,6 +2513,16 @@ If a field is not visible, use null. Return ONLY the JSON.`;
     if(wine.alcohol) document.getElementById('field-alcohol').value=wine.alcohol;
     if(wine.region) document.getElementById('field-region').value=wine.region;
     showToast('✨ הפרטים מולאו אוטומטית!');
+
+    // Ask if to use scanned image as bottle photo
+    setTimeout(()=>{
+      showConfirm('תמונת הבקבוק', 'האם להשתמש בתמונה שסרקת כתמונת הבקבוק?', ()=>{
+        winePhotoData = scanImageData;
+        document.getElementById('wine-ppimg').src = scanImageData;
+        document.getElementById('wine-ppwrap').style.display = 'block';
+        showToast('התמונה נשמרה כתמונת הבקבוק');
+      });
+    }, 300);
   } catch(e){
     status.textContent='שגיאה: '+e.message+' — נסה שוב';
     btn.disabled=false;
